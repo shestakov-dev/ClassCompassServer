@@ -45,6 +45,7 @@ export class UsersController {
 	@Attributes({
 		OR: ["user:read", "user:*"],
 	})
+	@ApiBearerAuth("Access Token")
 	async findAllBySchool(@Param("schoolId") schoolId: string) {
 		const users = await this.usersService.findAllBySchool(schoolId);
 
@@ -59,6 +60,7 @@ export class UsersController {
 	@Attributes({
 		OR: ["user:read", "user:*"],
 	})
+	@ApiBearerAuth("Access Token")
 	async findOne(@Param("id") id: string) {
 		return new UserEntity(await this.usersService.findOne(id));
 	}
@@ -71,6 +73,7 @@ export class UsersController {
 	@Attributes({
 		OR: ["user:update", "user:*"],
 	})
+	@ApiBearerAuth("Access Token")
 	async update(
 		@Param("id") id: string,
 		@Body() updateUserDto: UpdateUserDto
@@ -88,6 +91,7 @@ export class UsersController {
 	@Attributes({
 		OR: ["user:delete", "user:*"],
 	})
+	@ApiBearerAuth("Access Token")
 	async remove(@Param("id") id: string) {
 		return new UserEntity(await this.usersService.remove(id));
 	}
