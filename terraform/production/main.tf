@@ -1,5 +1,10 @@
 terraform {
-  backend "azurerm" {}
+  backend "azurerm" {
+	resource_group_name = "classcompassservertfrg"
+	storage_account_name = "classcompassservertfsa"
+	container_name       = "tfstate"
+	key                  = "classcompassserver.tfstate"
+  }
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
