@@ -26,6 +26,11 @@ export class StudentsController {
 
 	/**
 	 * Create a new student
+	 * Required attributes: "student:create" or "student:*"
+	 * Requires a valid access token. The user must have the required attributes to perform this action.
+	 *
+	 * Possible 401 Unauthorized: Missing or invalid access token.
+	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Post()
 	@ApiPost({ type: StudentEntity })
@@ -41,6 +46,11 @@ export class StudentsController {
 
 	/**
 	 * Get all students for a class
+	 * Required attributes: "student:read" or "student:*"
+	 * Requires a valid access token. The user must have the required attributes to access this resource.
+	 *
+	 * Possible 401 Unauthorized: Missing or invalid access token.
+	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Get("class/:classId")
 	@ApiGet({ type: [StudentEntity] })
@@ -56,6 +66,11 @@ export class StudentsController {
 
 	/**
 	 * Get a student by ID
+	 * Required attributes: "student:read" or "student:*"
+	 * Requires a valid access token. The user must have the required attributes to access this resource.
+	 *
+	 * Possible 401 Unauthorized: Missing or invalid access token.
+	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Get(":id")
 	@ApiGet({ type: StudentEntity })
@@ -69,6 +84,11 @@ export class StudentsController {
 
 	/**
 	 * Update a student by ID
+	 * Required attributes: "student:update" or "student:*"
+	 * Requires a valid access token. The user must have the required attributes to perform this action.
+	 *
+	 * Possible 401 Unauthorized: Missing or invalid access token.
+	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: StudentEntity })
@@ -87,6 +107,11 @@ export class StudentsController {
 
 	/**
 	 * Delete a student by ID
+	 * Required attributes: "student:delete" or "student:*"
+	 * Requires a valid access token. The user must have the required attributes to perform this action.
+	 *
+	 * Possible 401 Unauthorized: Missing or invalid access token.
+	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: StudentEntity })

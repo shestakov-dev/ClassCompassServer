@@ -1,0 +1,136 @@
+name: Deploy to Azure using Terraform
+
+on:
+    workflow_run:
+        workflows: ["Run tests", "Build and push Docker image to GHCR"]
+        types:
+            - completed
+    workflow_dispatch: # allow manual trigger
+
+env:
+    ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+    ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+    REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+    REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+
+jobs:
+    taint:
+        name: "Terraform Taint"
+        runs-on: ubuntu-latest
+        environment: default
+        defaults:
+            run:
+                working-directory: terraform/production
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Azure Login
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v2
+              with:
+                  terraform_wrapper: false
+                  terraform_version: 1.9.4
+
+            - name: Terraform Init
+              run: |
+                  terraform init -backend-config=backend.tfvars
+
+            - name: Terraform Taint
+              run: |
+                  terraform taint azurerm_container_app.app
+    plan:
+        name: "Terraform Plan"
+        needs: [taint]
+        runs-on: ubuntu-latest
+        environment: default
+        defaults:
+            run:
+                working-directory: terraform/production
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Azure Login
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v2
+              with:
+                  terraform_wrapper: false
+                  terraform_version: 1.9.4
+
+            - name: Terraform Init
+              run: |
+                  terraform init -backend-config=backend.tfvars
+
+            - name: Write secrets.ENV_VARS_JSON to tfvars
+              run: |
+                  echo 'env_vars = ${{ secrets.ENV_VARS_JSON }}' > env_vars.tfvars
+
+            - name: Terraform Plan
+              id: tf-plan
+              run: |
+                  terraform plan \
+                    -var-file=env_vars.tfvars \
+                    -var="registry_username=${{ secrets.REGISTRY_USERNAME }}" \
+                    -var="registry_password_secret=${{ secrets.REGISTRY_PASSWORD }}" \
+                    -out=tfplan
+
+            - name: Publish Terraform Plan
+              uses: actions/upload-artifact@v4
+              with:
+                  name: tfplan
+                  path: terraform/production/tfplan
+
+            - name: Clean up temp tfvars file
+              run: rm -f env_vars.tfvars
+    apply:
+        name: "Terraform Apply"
+        needs: [plan]
+        runs-on: ubuntu-latest
+        environment: default
+        defaults:
+            run:
+                working-directory: terraform/production
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v2
+              with:
+                  terraform_wrapper: false
+                  terraform_version: 1.9.4
+
+            - name: Terraform Init
+              run: terraform init -backend-config=backend.tfvars
+
+            - name: Download Terraform Plan
+              uses: actions/download-artifact@v4
+              with:
+                  name: tfplan
+                  path: terraform/production
+
+            - name: Write secrets.ENV_VARS_JSON to tfvars
+              run: |
+                  echo 'env_vars = ${{ secrets.ENV_VARS_JSON }}' > env_vars.tfvars
+
+            - name: Terraform Apply
+              run: |
+                  terraform apply \
+                    -auto-approve tfplan
+
+            - name: Clean up temp tfvars file
+              run: rm -f env_vars.tfvars
