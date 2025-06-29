@@ -12,12 +12,11 @@ import { CurrentUser } from "@resources/access-tokens/current-user.decorator";
 import { CurrentSession } from "@resources/refresh-tokens/current-session.decorator";
 import { TokensEntity } from "@resources/sessions/entities/tokens.entity";
 
+import { ApiPost, Unprotected } from "@decorators";
+
 import { LoginDto } from "./dto/login.dto";
 
-import { ApiPost } from "@decorators";
-
 import { AuthService } from "./auth.service";
-import { Unprotected } from "./decorators/unprotected.decorator";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { RefreshTokenGuard } from "./guards/refresh-token.guard";
 
@@ -68,7 +67,7 @@ export class AuthController {
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Post("logout")
 	@ApiPost({
-		type: null,
+		type: undefined,
 		successResponse: HttpStatus.NO_CONTENT,
 		errorResponses: [HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND],
 	})

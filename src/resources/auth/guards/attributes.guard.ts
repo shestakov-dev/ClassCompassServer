@@ -4,10 +4,8 @@ import { Reflector } from "@nestjs/core";
 import { RequestWithUser } from "@resources/access-tokens/request-with-user";
 import { UsersService } from "@resources/users/users.service";
 
-import {
-	AttributeCondition,
-	ATTRIBUTES_KEY,
-} from "../decorators/attributes.decorator";
+import { AttributeCondition, ATTRIBUTES_KEY } from "@decorators";
+
 import { Attribute } from "../types/attributes";
 
 @Injectable()

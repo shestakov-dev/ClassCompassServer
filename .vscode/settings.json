@@ -1,0 +1,37 @@
+{
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/CVS": true,
+		"**/.DS_Store": true,
+		"**/Thumbs.db": true,
+		"Dockerfile": true,
+		"tsconfig.json": true,
+		".gitattributes": true,
+		".eslintcache": true,
+		"coverage": true,
+		"README.md": true,
+		"LICENSE": true,
+		"node_modules": true,
+		"pnpm-lock.yaml": true,
+		".env": true,
+		"dist": true,
+		"jest.config.ts": true,
+		"docker-compose.yml": true,
+		".github": false
+	},
+	"hide-files.files": [
+		".gitattributes",
+		".eslintcache",
+		"coverage",
+		"README.md",
+		"LICENSE",
+		"node_modules",
+		"pnpm-lock.yaml",
+		".env",
+		"dist",
+		"jest.config.ts",
+		"docker-compose.yml"
+	]
+}

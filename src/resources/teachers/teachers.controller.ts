@@ -9,16 +9,14 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
-import { Attributes } from "@resources/auth/decorators/attributes.decorator";
-
 import { ObjectIdValidationPipe } from "@shared/pipes/object-id-validation/object-id-validation.pipe";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost, Attributes } from "@decorators";
 
 import { CreateTeacherDto } from "./dto/create-teacher.dto";
 import { UpdateTeacherDto } from "./dto/update-teacher.dto";
 
 import { TeacherEntity } from "./entities/teacher.entity";
-
-import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { TeachersService } from "./teachers.service";
 

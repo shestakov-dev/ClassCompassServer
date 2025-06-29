@@ -9,14 +9,12 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
-import { Attributes } from "@resources/auth/decorators/attributes.decorator";
+import { ApiDelete, ApiGet, ApiPatch, ApiPost, Attributes } from "@decorators";
 
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
 import { UserEntity } from "./entities/user.entity";
-
-import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { UsersService } from "./users.service";
 

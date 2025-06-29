@@ -1,6 +1,6 @@
 import { SetMetadata } from "@nestjs/common";
 
-import { Attribute } from "../types/attributes";
+import { Attribute } from "@resources/auth/types/attributes";
 
 export const ATTRIBUTES_KEY = "attributes";
 

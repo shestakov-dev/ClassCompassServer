@@ -26,14 +26,17 @@
 			"@decorators": [
 				"src/shared/decorators"
 			],
-			"@decorators/*": [
-				"src/shared/decorators/*"
-			],
+			// "@decorators/*": [
+			// 	"src/shared/decorators/*"
+			// ],
 			"@shared/*": [
 				"src/shared/*"
 			],
 			"@prisma/*": [
 				"src/prisma/*"
+			],
+			"@test/*": [
+				"test/*"
 			]
 		}
 	}

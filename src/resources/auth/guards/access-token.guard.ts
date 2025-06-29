@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
 import { Observable } from "rxjs";
 
-import { UNPROTECTED_KEY } from "../decorators/unprotected.decorator";
+import { UNPROTECTED_KEY } from "@decorators";
 
 @Injectable()
 export class AccessTokenGuard
