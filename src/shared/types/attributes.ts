@@ -26,3 +26,8 @@ export function isAttribute(attribute: unknown): attribute is Attribute {
 
 	return MODELS.has(model) && ACTIONS.has(action as Actions);
 }
+
+export type AttributeCondition =
+	| Attribute
+	| { AND: AttributeCondition[] }
+	| { OR: AttributeCondition[] };

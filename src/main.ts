@@ -3,6 +3,10 @@ import { NestFactory, Reflector } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { SwaggerTheme, SwaggerThemeNameEnum } from "swagger-themes";
 
+import {
+	ACCESS_TOKEN_KEY,
+	REFRESH_TOKEN_KEY,
+} from "@shared/decorators/auth.decorator";
 import { PrismaClientExceptionFilter } from "@shared/filters/prisma-client-exception/prisma-client-exception.filter";
 
 import { AppModule } from "./app.module";
@@ -33,7 +37,7 @@ async function bootstrap() {
 				scheme: "bearer",
 				bearerFormat: "JWT",
 			},
-			"Access Token"
+			ACCESS_TOKEN_KEY
 		)
 		.addBearerAuth(
 			{
@@ -41,7 +45,7 @@ async function bootstrap() {
 				scheme: "bearer",
 				bearerFormat: "JWT",
 			},
-			"Refresh Token"
+			REFRESH_TOKEN_KEY
 		)
 		.build();
 

@@ -5,6 +5,7 @@ import { ScheduleModule } from "@nestjs/schedule";
 
 import { AccessTokenGuard } from "@resources/auth/guards/access-token.guard";
 import { AttributesGuard } from "@resources/auth/guards/attributes.guard";
+import { RefreshTokenGuard } from "@resources/auth/guards/refresh-token.guard";
 import { ClassesModule } from "@resources/classes/classes.module";
 import { SchoolsModule } from "@resources/schools/schools.module";
 import { StudentsModule } from "@resources/students/students.module";
@@ -17,6 +18,10 @@ import { UsersModule } from "./resources/users/users.module";
 
 @Module({
 	providers: [
+		{
+			provide: APP_GUARD,
+			useClass: RefreshTokenGuard,
+		},
 		{
 			provide: APP_GUARD,
 			useClass: AccessTokenGuard,

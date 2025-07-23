@@ -8,6 +8,7 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import * as argon2 from "argon2";
 import { plainToInstance } from "class-transformer";
+import { validateOrReject } from "class-validator";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
 import { RequestWithSession } from "@resources/refresh-tokens/request-with-session";
@@ -41,12 +42,21 @@ export class RefreshTokenStrategy extends PassportStrategy(
 		req: RequestWithSession,
 		refreshTokenPayload: RefreshTokenPayload
 	) {
-		const { sessionId } = plainToInstance(
+		const refreshTokenPayloadEnity = plainToInstance(
 			RefreshTokenPayloadEntity,
 			refreshTokenPayload
 		);
 
-		const session = await this.sessionsService.findOne(sessionId);
+		// TODO: Move the error handling to a global exception filter
+		await validateOrReject(refreshTokenPayloadEnity).catch(() => {
+			console.error("Invalid refresh token payload", refreshTokenPayload);
+
+			throw new UnauthorizedException("Invalid refresh token payload");
+		});
+
+		const session = await this.sessionsService.findOne(
+			refreshTokenPayloadEnity.sessionId
+		);
 
 		const refreshToken = req.headers.authorization?.split(" ")[1];
 
