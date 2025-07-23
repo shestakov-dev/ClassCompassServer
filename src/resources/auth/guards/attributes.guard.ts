@@ -4,11 +4,14 @@ import { Reflector } from "@nestjs/core";
 import { RequestWithUser } from "@resources/access-tokens/request-with-user";
 import { UsersService } from "@resources/users/users.service";
 
+import { Attribute, AttributeCondition } from "@shared/types/attributes";
+
 import {
-	AttributeCondition,
+	ACCESS_TOKEN_KEY,
 	ATTRIBUTES_KEY,
-} from "../decorators/attributes.decorator";
-import { Attribute } from "../types/attributes";
+	AUTH_TYPE_KEY,
+	AuthType,
+} from "@decorators";
 
 @Injectable()
 export class AttributesGuard implements CanActivate {
@@ -18,6 +21,15 @@ export class AttributesGuard implements CanActivate {
 	) {}
 
 	async canActivate(context: ExecutionContext) {
+		const authType = this.reflector.get<AuthType>(
+			AUTH_TYPE_KEY,
+			context.getHandler()
+		);
+
+		if (authType !== ACCESS_TOKEN_KEY) {
+			return true;
+		}
+
 		const requiredAttributes = this.reflector.getAllAndOverride<
 			AttributeCondition[]
 		>(ATTRIBUTES_KEY, [context.getHandler(), context.getClass()]);

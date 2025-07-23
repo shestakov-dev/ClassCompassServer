@@ -62,7 +62,7 @@ export class PrismaClientExceptionFilter implements ExceptionFilter {
 			}
 
 			default: {
-				console.log(exception);
+				console.error(exception);
 
 				const responseException = new InternalServerErrorException(
 					"An unexpected error occurred."

@@ -1,9 +1,10 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { hash } from "bcryptjs";
 
-import { Attribute, isAttribute } from "@resources/auth/types/attributes";
 import { RolesService } from "@resources/roles/roles.service";
 import { SchoolsService } from "@resources/schools/schools.service";
+
+import { Attribute, isAttribute } from "@shared/types/attributes";
 
 import { PrismaService } from "@prisma/prisma.service";
 

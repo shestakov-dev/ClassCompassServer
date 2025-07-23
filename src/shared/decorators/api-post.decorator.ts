@@ -1,7 +1,6 @@
 import { applyDecorators, HttpStatus } from "@nestjs/common";
 
-import { ApiResponsesOptions } from "@decorators/api-responses/api-responses-options.types";
-import { ApiResponses } from "@decorators/api-responses/api-responses.decorator";
+import { ApiResponses, ApiResponsesOptions } from "@decorators";
 
 export function ApiPost({
 	type,
@@ -12,7 +11,11 @@ export function ApiPost({
 		ApiResponses({
 			type,
 			successResponse: successResponse ?? HttpStatus.CREATED,
-			errorResponses,
+			errorResponses: errorResponses ?? [
+				HttpStatus.BAD_REQUEST,
+				HttpStatus.NOT_FOUND,
+				HttpStatus.CONFLICT,
+			],
 		})
 	);
 }

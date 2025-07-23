@@ -107,6 +107,11 @@ export default [
 							position: "before",
 						},
 						{
+							pattern: "@decorators",
+							group: "internal",
+							position: "before",
+						},
+						{
 							pattern: "@decorators/**",
 							group: "internal",
 							position: "before",

@@ -8,18 +8,15 @@ import {
 	Patch,
 	Post,
 } from "@nestjs/common";
-import { ApiBearerAuth } from "@nestjs/swagger";
-
-import { Attributes } from "@resources/auth/decorators/attributes.decorator";
 
 import { ObjectIdValidationPipe } from "@shared/pipes/object-id-validation/object-id-validation.pipe";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
 
 import { CreateSchoolDto } from "./dto/create-school.dto";
 import { UpdateSchoolDto } from "./dto/update-school.dto";
 
 import { SchoolEntity } from "./entities/school.entity";
-
-import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { SchoolsService } from "./schools.service";
 
@@ -29,21 +26,13 @@ export class SchoolsController {
 
 	/**
 	 * Create a new school
-	 * Required attributes: "school:create" or "school:*"
-	 * Requires a valid access token. The user must have the required attributes to perform this action.
-	 *
-	 * Possible 401 Unauthorized: Missing or invalid access token.
-	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Post()
 	@ApiPost({
 		type: SchoolEntity,
 		errorResponses: [HttpStatus.BAD_REQUEST, HttpStatus.CONFLICT],
 	})
-	@Attributes({
-		OR: ["school:create", "school:*"],
-	})
-	@ApiBearerAuth("Access Token")
+	@Auth("Access token", { OR: ["school:create", "school:*"] })
 	async create(@Body() createSchoolDto: CreateSchoolDto) {
 		return new SchoolEntity(
 			await this.schoolsService.create(createSchoolDto)
@@ -52,21 +41,15 @@ export class SchoolsController {
 
 	/**
 	 * Get all schools
-	 * Required attributes: "school:read" or "school:*"
-	 * Requires a valid access token. The user must have the required attributes to access this resource.
-	 *
-	 * Possible 401 Unauthorized: Missing or invalid access token.
-	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Get()
 	@ApiGet({
 		type: [SchoolEntity],
 		errorResponses: [],
 	})
-	@Attributes({
+	@Auth("Access token", {
 		OR: ["school:read", "school:*"],
 	})
-	@ApiBearerAuth("Access Token")
 	async findAll() {
 		const schools = await this.schoolsService.findAll();
 
@@ -75,36 +58,24 @@ export class SchoolsController {
 
 	/**
 	 * Get a school by ID
-	 * Required attributes: "school:read" or "school:*"
-	 * Requires a valid access token. The user must have the required attributes to access this resource.
-	 *
-	 * Possible 401 Unauthorized: Missing or invalid access token.
-	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Get(":id")
 	@ApiGet({ type: SchoolEntity })
-	@Attributes({
+	@Auth("Access token", {
 		OR: ["school:read", "school:*"],
 	})
-	@ApiBearerAuth("Access Token")
 	async findOne(@Param("id", ObjectIdValidationPipe) id: string) {
 		return new SchoolEntity(await this.schoolsService.findOne(id));
 	}
 
 	/**
 	 * Update a school by ID
-	 * Required attributes: "school:update" or "school:*"
-	 * Requires a valid access token. The user must have the required attributes to perform this action.
-	 *
-	 * Possible 401 Unauthorized: Missing or invalid access token.
-	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: SchoolEntity })
-	@Attributes({
+	@Auth("Access token", {
 		OR: ["school:update", "school:*"],
 	})
-	@ApiBearerAuth("Access Token")
 	async update(
 		@Param("id", ObjectIdValidationPipe) id: string,
 		@Body() updateSchoolDto: UpdateSchoolDto
@@ -116,18 +87,12 @@ export class SchoolsController {
 
 	/**
 	 * Delete a school by ID
-	 * Required attributes: "school:delete" or "school:*"
-	 * Requires a valid access token. The user must have the required attributes to perform this action.
-	 *
-	 * Possible 401 Unauthorized: Missing or invalid access token.
-	 * Possible 403 Forbidden: Insufficient permissions (missing required attributes).
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: SchoolEntity })
-	@Attributes({
+	@Auth("Access token", {
 		OR: ["school:delete", "school:*"],
 	})
-	@ApiBearerAuth("Access Token")
 	async remove(@Param("id", ObjectIdValidationPipe) id: string) {
 		return new SchoolEntity(await this.schoolsService.remove(id));
 	}
