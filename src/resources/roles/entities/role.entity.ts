@@ -11,7 +11,7 @@ export class RoleEntity implements Role {
 
 	/**
 	 * The role's unique identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
 	id: string;
 
@@ -23,7 +23,7 @@ export class RoleEntity implements Role {
 
 	/**
 	 * The role's school identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440001"
 	 */
 	schoolId: string;
 
@@ -36,7 +36,7 @@ export class RoleEntity implements Role {
 
 	/**
 	 * The role's user identifiers
-	 * @example ["507f191e810c19729de860ea", "507f191e810c19729de860eb"]
+	 * @example ["550e8400-e29b-41d4-a716-446655440002", "550e8400-e29b-41d4-a716-446655440003"]
 	 * @default []
 	 */
 	userIds: string[] = [];

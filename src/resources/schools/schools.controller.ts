@@ -5,11 +5,10 @@ import {
 	Get,
 	HttpStatus,
 	Param,
+	ParseUUIDPipe,
 	Patch,
 	Post,
 } from "@nestjs/common";
-
-import { ObjectIdValidationPipe } from "@shared/pipes/object-id-validation/object-id-validation.pipe";
 
 import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
 
@@ -64,7 +63,7 @@ export class SchoolsController {
 	@Auth("Access token", {
 		OR: ["school:read", "school:*"],
 	})
-	async findOne(@Param("id", ObjectIdValidationPipe) id: string) {
+	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return new SchoolEntity(await this.schoolsService.findOne(id));
 	}
 
@@ -77,7 +76,7 @@ export class SchoolsController {
 		OR: ["school:update", "school:*"],
 	})
 	async update(
-		@Param("id", ObjectIdValidationPipe) id: string,
+		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateSchoolDto: UpdateSchoolDto
 	) {
 		return new SchoolEntity(
@@ -93,7 +92,7 @@ export class SchoolsController {
 	@Auth("Access token", {
 		OR: ["school:delete", "school:*"],
 	})
-	async remove(@Param("id", ObjectIdValidationPipe) id: string) {
+	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return new SchoolEntity(await this.schoolsService.remove(id));
 	}
 }

@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+	CanActivate,
+	ExecutionContext,
+	ForbiddenException,
+	Injectable,
+	InternalServerErrorException,
+} from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
 import { RequestWithUser } from "@resources/access-tokens/request-with-user";
@@ -9,6 +15,7 @@ import { Attribute, AttributeCondition } from "@shared/types/attributes";
 import {
 	ACCESS_TOKEN_KEY,
 	ATTRIBUTES_KEY,
+	attributesToString,
 	AUTH_TYPE_KEY,
 	AuthType,
 } from "@decorators";
@@ -41,14 +48,26 @@ export class AttributesGuard implements CanActivate {
 		const { user } = context.switchToHttp().getRequest<RequestWithUser>();
 
 		if (!user) {
-			return false;
+			console.error("User not found in request.");
+
+			throw new InternalServerErrorException(
+				"User not found in request."
+			);
 		}
 
 		const attributes = await this.usersService.getAttributes(user.id);
 
-		return requiredAttributes.every(attribute =>
+		const isAuthorized = requiredAttributes.every(attribute =>
 			this.checkConditions(attribute, attributes)
 		);
+
+		if (!isAuthorized) {
+			throw new ForbiddenException(
+				`Missing required attributes: ${attributesToString(requiredAttributes)}.`
+			);
+		}
+
+		return true;
 	}
 
 	private checkConditions(

@@ -11,7 +11,7 @@ export class ClassEntity implements Class {
 
 	/**
 	 * The class's unique identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
 	id: string;
 
@@ -23,7 +23,7 @@ export class ClassEntity implements Class {
 
 	/**
 	 * The class's school identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
 	schoolId: string;
 

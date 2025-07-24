@@ -29,8 +29,8 @@ async function bootstrap() {
 		.setTitle("Class Compass API")
 		.setDescription("An API for the Class Compass application")
 		.setVersion("1.0")
-		.addServer("http://localhost:8393")
 		.addServer("/")
+		.addServer("http://localhost:8393")
 		.addBearerAuth(
 			{
 				type: "http",
@@ -50,9 +50,8 @@ async function bootstrap() {
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config, {
-		// TODO: create a custom operationIdFactory
-		// operationIdFactory: (controllerKey: string, methodKey: string) =>
-		// 	`${controllerKey}${methodKey}`,
+		operationIdFactory: (controllerKey: string, methodKey: string) =>
+			`${controllerKey}${methodKey.charAt(0).toUpperCase()}${methodKey.slice(1)}`,
 	});
 
 	const theme = new SwaggerTheme();

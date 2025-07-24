@@ -11,19 +11,19 @@ export class StudentEntity implements Student {
 
 	/**
 	 * The student's unique identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
 	id: string;
 
 	/**
 	 * The student's user identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440001"
 	 */
 	userId: string;
 
 	/**
 	 * The student's class identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440002"
 	 */
 	classId: string;
 

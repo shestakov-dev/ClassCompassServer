@@ -1,5 +1,5 @@
 import { ApiSchema } from "@nestjs/swagger";
-import { IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 
 @ApiSchema({
 	description: "The data required to create a new role",
@@ -15,11 +15,9 @@ export class CreateRoleDto {
 
 	/**
 	 * The role's school identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
-	@IsString()
-	@IsNotEmpty()
-	@IsMongoId()
+	@IsUUID()
 	schoolId: string;
 
 	/**
@@ -35,12 +33,10 @@ export class CreateRoleDto {
 
 	/**
 	 * The role's user identifiers
-	 * @example ["507f191e810c19729de860ea", "507f191e810c19729de860eb"]
+	 * @example ["550e8400-e29b-41d4-a716-446655440000", "550e8400-e29b-41d4-a716-446655440001"]
 	 * @default []
 	 */
 	@IsOptional()
-	@IsString({ each: true })
-	@IsNotEmpty({ each: true })
-	@IsMongoId({ each: true })
+	@IsUUID(4, { each: true })
 	userIds?: string[];
 }

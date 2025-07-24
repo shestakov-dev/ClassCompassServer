@@ -3,17 +3,17 @@ generator client {
 }
 
 datasource db {
-    provider = "mongodb"
+    provider = "postgresql"
     url      = env("DATABASE_URL")
 }
 
 // TODO: Add more fields for things like ip address, user agent, etc.
 model Session {
-    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    id           String   @id @default(uuid())
     refreshToken String   @unique
     expiresAt    DateTime
 
-    userId String @db.ObjectId
+    userId String
     user   User   @relation(fields: [userId], references: [id])
 
     createdAt DateTime  @default(now())
@@ -25,15 +25,14 @@ model Session {
 }
 
 model Role {
-    id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    id         String   @id @default(uuid())
     name       String   @unique
     attributes String[] @default([])
 
-    schoolId String @db.ObjectId
+    schoolId String
     school   School @relation(fields: [schoolId], references: [id])
 
-    userIds String[] @default([]) @db.ObjectId
-    users   User[]   @relation(fields: [userIds], references: [id])
+    users User[]
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -46,19 +45,18 @@ model Role {
 }
 
 model User {
-    id       String @id @default(auto()) @map("_id") @db.ObjectId
+    id       String @id @default(uuid())
     name     String
     email    String @unique
     password String
 
-    schoolId String @db.ObjectId
+    schoolId String
     school   School @relation(fields: [schoolId], references: [id])
 
     teacher Teacher?
     student Student?
 
-    roleIds String[] @default([]) @db.ObjectId
-    roles   Role[]   @relation(fields: [roleIds], references: [id])
+    roles Role[]
 
     sessions Session[]
 
@@ -72,7 +70,7 @@ model User {
 }
 
 model School {
-    id   String @id @default(auto()) @map("_id") @db.ObjectId
+    id   String @id @default(uuid())
     name String @unique
 
     users User[]
@@ -89,9 +87,9 @@ model School {
 }
 
 model Teacher {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
+    id String @id @default(uuid())
 
-    userId String @unique @db.ObjectId
+    userId String @unique
     user   User   @relation(fields: [userId], references: [id])
 
     createdAt DateTime  @default(now())
@@ -102,10 +100,10 @@ model Teacher {
 }
 
 model Class {
-    id   String @id @default(auto()) @map("_id") @db.ObjectId
+    id   String @id @default(uuid())
     name String
 
-    schoolId String @db.ObjectId
+    schoolId String
     school   School @relation(fields: [schoolId], references: [id])
 
     students Student[]
@@ -122,12 +120,12 @@ model Class {
 }
 
 model Student {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
+    id String @id @default(uuid())
 
-    userId String @unique @db.ObjectId
+    userId String @unique
     user   User   @relation(fields: [userId], references: [id])
 
-    classId String @db.ObjectId
+    classId String
     class   Class  @relation(fields: [classId], references: [id])
 
     createdAt DateTime  @default(now())

@@ -1,8 +1,9 @@
+import { randomUUID } from "crypto";
+
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Session } from "@prisma/client";
 import * as argon2 from "argon2";
-import { ObjectId } from "bson";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { validateOrReject } from "class-validator";
 
@@ -37,7 +38,7 @@ export class SessionsService {
 	}
 
 	async authenticate(userId: string) {
-		const sessionId = new ObjectId().toHexString();
+		const sessionId = randomUUID();
 
 		const accessToken = await this.issueAccessToken({
 			userId,

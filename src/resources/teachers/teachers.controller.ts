@@ -4,11 +4,10 @@ import {
 	Delete,
 	Get,
 	Param,
+	ParseUUIDPipe,
 	Patch,
 	Post,
 } from "@nestjs/common";
-
-import { ObjectIdValidationPipe } from "@shared/pipes/object-id-validation/object-id-validation.pipe";
 
 import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
 
@@ -45,7 +44,7 @@ export class TeachersController {
 	@Auth("Access token", {
 		OR: ["teacher:read", "teacher:*"],
 	})
-	async findOne(@Param("id", ObjectIdValidationPipe) id: string) {
+	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return new TeacherEntity(await this.teachersService.findOne(id));
 	}
 
@@ -58,7 +57,7 @@ export class TeachersController {
 		OR: ["teacher:update", "teacher:*"],
 	})
 	async update(
-		@Param("id", ObjectIdValidationPipe) id: string,
+		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateTeacherDto: UpdateTeacherDto
 	) {
 		return new TeacherEntity(
@@ -74,7 +73,7 @@ export class TeachersController {
 	@Auth("Access token", {
 		OR: ["teacher:delete", "teacher:*"],
 	})
-	async remove(@Param("id", ObjectIdValidationPipe) id: string) {
+	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return new TeacherEntity(await this.teachersService.remove(id));
 	}
 }
