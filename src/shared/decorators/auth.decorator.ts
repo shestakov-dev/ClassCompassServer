@@ -26,13 +26,13 @@ export type AuthType =
 
 function conditionToStr(condition: AttributeCondition): string {
 	if (typeof condition === "string") {
-		return condition;
+		return `"${condition}"`;
 	}
 	if ("AND" in condition) {
-		return "(" + condition.AND.map(conditionToStr).join(" AND ") + ")";
+		return "(" + condition.AND.map(conditionToStr).join(" and ") + ")";
 	}
 	if ("OR" in condition) {
-		return "(" + condition.OR.map(conditionToStr).join(" OR ") + ")";
+		return "(" + condition.OR.map(conditionToStr).join(" or ") + ")";
 	}
 	return "";
 }

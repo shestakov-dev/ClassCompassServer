@@ -50,9 +50,8 @@ async function bootstrap() {
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config, {
-		// TODO: create a custom operationIdFactory
-		// operationIdFactory: (controllerKey: string, methodKey: string) =>
-		// 	`${controllerKey}${methodKey}`,
+		operationIdFactory: (_, methodKey: string) =>
+			`${methodKey.charAt(0).toUpperCase()}${methodKey.slice(1)}`,
 	});
 
 	const theme = new SwaggerTheme();
