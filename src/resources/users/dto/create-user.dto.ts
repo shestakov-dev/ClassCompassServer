@@ -1,11 +1,11 @@
 import { ApiSchema } from "@nestjs/swagger";
 import {
 	IsEmail,
-	IsMongoId,
 	IsNotEmpty,
 	IsOptional,
 	IsString,
 	IsStrongPassword,
+	IsUUID,
 	MaxLength,
 } from "class-validator";
 
@@ -25,8 +25,6 @@ export class CreateUserDto {
 	 * The user's email
 	 * @example "johndoe@example.com"
 	 */
-	@IsString()
-	@IsNotEmpty()
 	@IsEmail()
 	email: string;
 
@@ -34,8 +32,6 @@ export class CreateUserDto {
 	 * The user's unhashed password
 	 * @example "password"
 	 */
-	@IsString()
-	@IsNotEmpty()
 	@IsStrongPassword({
 		minLength: 8,
 		minLowercase: 1,
@@ -49,20 +45,16 @@ export class CreateUserDto {
 
 	/**
 	 * The user's school identifier
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
-	@IsString()
-	@IsNotEmpty()
-	@IsMongoId()
+	@IsUUID()
 	schoolId: string;
 
 	/**
 	 * The user's role identifiers
-	 * @example ["507f191e810c19729de860ea", "507f191e810c19729de860eb"]
+	 * @example ["550e8400-e29b-41d4-a716-446655440000", "550e8400-e29b-41d4-a716-446655440001"]
 	 */
 	@IsOptional()
-	@IsString({ each: true })
-	@IsNotEmpty({ each: true })
-	@IsMongoId({ each: true })
+	@IsUUID(4, { each: true })
 	roleIds?: string[];
 }

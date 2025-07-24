@@ -1,5 +1,5 @@
 import { ApiSchema } from "@nestjs/swagger";
-import { IsMongoId, IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 @ApiSchema({
 	description: "The data required to create a new class",
@@ -15,10 +15,8 @@ export class CreateClassDto {
 
 	/**
 	 * The class's school identifier.
-	 * @example "507f191e810c19729de860ea"
+	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
-	@IsString()
-	@IsNotEmpty()
-	@IsMongoId()
+	@IsUUID()
 	schoolId: string;
 }

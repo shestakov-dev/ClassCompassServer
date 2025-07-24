@@ -46,6 +46,7 @@ export class UsersService {
 	async findOne(id: string) {
 		return this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
+			include: { roles: true },
 		});
 	}
 
@@ -79,11 +80,7 @@ export class UsersService {
 	async getAttributes(id: string) {
 		const user = await this.findOne(id);
 
-		const roles = await Promise.all(
-			user.roleIds.map(roleId => this.rolesService.findOne(roleId))
-		);
-
-		return roles.reduce((attributes: Attribute[], role) => {
+		return user.roles.reduce((attributes: Attribute[], role) => {
 			return [...attributes, ...role.attributes.filter(isAttribute)];
 		}, []);
 	}

@@ -4,11 +4,10 @@ import {
 	Delete,
 	Get,
 	Param,
+	ParseUUIDPipe,
 	Patch,
 	Post,
 } from "@nestjs/common";
-
-import { ObjectIdValidationPipe } from "@shared/pipes/object-id-validation/object-id-validation.pipe";
 
 import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
 
@@ -43,9 +42,7 @@ export class RolesController {
 	@Auth("Access token", {
 		OR: ["role:read", "role:*"],
 	})
-	async findAllBySchool(
-		@Param("schoolId", ObjectIdValidationPipe) schoolId: string
-	) {
+	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
 		const roles = await this.rolesService.findAllBySchool(schoolId);
 
 		return roles.map(role => new RoleEntity(role));
@@ -59,7 +56,7 @@ export class RolesController {
 	@Auth("Access token", {
 		OR: ["role:read", "role:*"],
 	})
-	async findOne(@Param("id", ObjectIdValidationPipe) id: string) {
+	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return new RoleEntity(await this.rolesService.findOne(id));
 	}
 
@@ -72,7 +69,7 @@ export class RolesController {
 		OR: ["role:update", "role:*"],
 	})
 	async update(
-		@Param("id", ObjectIdValidationPipe) id: string,
+		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateRoleDto: UpdateRoleDto
 	) {
 		return new RoleEntity(
@@ -88,7 +85,7 @@ export class RolesController {
 	@Auth("Access token", {
 		OR: ["role:delete", "role:*"],
 	})
-	async remove(@Param("id", ObjectIdValidationPipe) id: string) {
+	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return new RoleEntity(await this.rolesService.remove(id));
 	}
 }
