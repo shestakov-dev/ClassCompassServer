@@ -8,7 +8,7 @@ export type RefreshTokenPayload = {
 };
 
 export class RefreshTokenPayloadEntity implements RefreshTokenPayload {
-	static fromPlain(plain: RefreshTokenPayload) {
+	static fromPlain(plain: RefreshTokenPayload): RefreshTokenPayloadEntity {
 		return plainToInstance(RefreshTokenPayloadEntity, plain, {
 			exposeDefaultValues: true,
 		});

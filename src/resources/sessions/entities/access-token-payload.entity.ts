@@ -8,7 +8,7 @@ export type AccessTokenPayload = {
 };
 
 export class AccessTokenPayloadEntity implements AccessTokenPayload {
-	static fromPlain(plain: AccessTokenPayload) {
+	static fromPlain(plain: AccessTokenPayload): AccessTokenPayloadEntity {
 		return plainToInstance(AccessTokenPayloadEntity, plain, {
 			exposeDefaultValues: true,
 		});
