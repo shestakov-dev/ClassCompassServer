@@ -39,9 +39,7 @@ export class UsersService {
 				},
 			},
 			include: {
-				roles: {
-					select: { id: true },
-				},
+				roles: { select: { id: true }, where: { deleted: false } },
 			},
 		});
 
@@ -57,7 +55,9 @@ export class UsersService {
 
 		const users = await this.prisma.client.user.findMany({
 			where: { schoolId },
-			include: { roles: { select: { id: true } } },
+			include: {
+				roles: { select: { id: true }, where: { deleted: false } },
+			},
 		});
 
 		return users.map(user => ({
@@ -70,7 +70,9 @@ export class UsersService {
 	async findOne(id: string) {
 		const user = await this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
-			include: { roles: { select: { id: true } } },
+			include: {
+				roles: { select: { id: true }, where: { deleted: false } },
+			},
 		});
 
 		return {
@@ -102,7 +104,9 @@ export class UsersService {
 						}
 					: undefined,
 			},
-			include: { roles: { select: { id: true } } },
+			include: {
+				roles: { select: { id: true }, where: { deleted: false } },
+			},
 		});
 
 		return {
@@ -127,13 +131,7 @@ export class UsersService {
 	async getAttributes(id: string) {
 		const user = await this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
-			select: {
-				roles: {
-					select: {
-						attributes: true,
-					},
-				},
-			},
+			select: { roles: { select: { attributes: true } } },
 		});
 
 		return user.roles.reduce((attributes: Attribute[], role) => {

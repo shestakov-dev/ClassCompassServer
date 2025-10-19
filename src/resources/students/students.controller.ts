@@ -44,7 +44,7 @@ export class StudentsController {
 	@Auth("Access token", {
 		OR: ["student:read", "student:*"],
 	})
-	async findAll(@Param("classId", ParseUUIDPipe) classId: string) {
+	async findAllByClass(@Param("classId", ParseUUIDPipe) classId: string) {
 		const students = await this.studentsService.findAllByClass(classId);
 
 		return students.map(student => StudentEntity.fromPlain(student));

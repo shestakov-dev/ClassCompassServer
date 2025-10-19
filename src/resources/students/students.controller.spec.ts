@@ -119,7 +119,7 @@ describe("StudentsController", () => {
 		it("should return all students for a class", async () => {
 			const classId = "class123";
 
-			const result = await controller.findAll(classId);
+			const result = await controller.findAllByClass(classId);
 
 			expect(Array.isArray(result)).toBe(true);
 			expect(result).toHaveLength(2);

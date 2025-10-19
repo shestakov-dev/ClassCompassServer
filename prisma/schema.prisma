@@ -162,30 +162,13 @@ model Room {
     @@index([floorId])
 }
 
-model TeacherSubject {
-    teacherId String
-    teacher   Teacher @relation(fields: [teacherId], references: [id])
-
-    subjectId String
-    subject   Subject @relation(fields: [subjectId], references: [id])
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
-
-    @@id([teacherId, subjectId])
-    @@index([teacherId])
-    @@index([subjectId])
-}
-
 model Teacher {
     id String @id @default(uuid())
 
     userId String @unique
     user   User   @relation(fields: [userId], references: [id])
 
-    teacherSubjects TeacherSubject[]
+    subjects Subject[]
 
     lessons Lesson[]
 
@@ -202,7 +185,7 @@ model Subject {
     schoolId String
     school   School @relation(fields: [schoolId], references: [id])
 
-    teacherSubjects TeacherSubject[]
+    teachers Teacher[]
 
     lessons Lesson[]
 

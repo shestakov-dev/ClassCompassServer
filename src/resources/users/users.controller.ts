@@ -4,6 +4,7 @@ import {
 	Delete,
 	Get,
 	Param,
+	ParseUUIDPipe,
 	Patch,
 	Post,
 } from "@nestjs/common";
@@ -43,7 +44,7 @@ export class UsersController {
 	@Auth("Access token", {
 		OR: ["user:read", "user:*"],
 	})
-	async findAllBySchool(@Param("schoolId") schoolId: string) {
+	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
 		const users = await this.usersService.findAllBySchool(schoolId);
 
 		return users.map(user => UserEntity.fromPlain(user));
@@ -57,7 +58,7 @@ export class UsersController {
 	@Auth("Access token", {
 		OR: ["user:read", "user:*"],
 	})
-	async findOne(@Param("id") id: string) {
+	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return UserEntity.fromPlain(await this.usersService.findOne(id));
 	}
 
@@ -70,7 +71,7 @@ export class UsersController {
 		OR: ["user:update", "user:*"],
 	})
 	async update(
-		@Param("id") id: string,
+		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateUserDto: UpdateUserDto
 	) {
 		return UserEntity.fromPlain(
@@ -86,7 +87,7 @@ export class UsersController {
 	@Auth("Access token", {
 		OR: ["user:delete", "user:*"],
 	})
-	async remove(@Param("id") id: string) {
+	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return UserEntity.fromPlain(await this.usersService.remove(id));
 	}
 }

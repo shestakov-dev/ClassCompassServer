@@ -33,9 +33,7 @@ export class RolesService {
 				},
 			},
 			include: {
-				users: {
-					select: { id: true },
-				},
+				users: { select: { id: true }, where: { deleted: false } },
 			},
 		});
 
@@ -52,9 +50,7 @@ export class RolesService {
 		const roles = await this.prisma.client.role.findMany({
 			where: { schoolId },
 			include: {
-				users: {
-					select: { id: true },
-				},
+				users: { select: { id: true }, where: { deleted: false } },
 			},
 		});
 
@@ -69,9 +65,7 @@ export class RolesService {
 		const role = await this.prisma.client.role.findUniqueOrThrow({
 			where: { id },
 			include: {
-				users: {
-					select: { id: true },
-				},
+				users: { select: { id: true }, where: { deleted: false } },
 			},
 		});
 
@@ -101,9 +95,7 @@ export class RolesService {
 					: undefined,
 			},
 			include: {
-				users: {
-					select: { id: true },
-				},
+				users: { select: { id: true }, where: { deleted: false } },
 			},
 		});
 

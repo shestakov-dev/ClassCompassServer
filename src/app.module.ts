@@ -15,6 +15,7 @@ import { SessionsModule } from "@resources/sessions/sessions.module";
 import { StudentsModule } from "@resources/students/students.module";
 import { TeachersModule } from "@resources/teachers/teachers.module";
 import { UsersModule } from "@resources/users/users.module";
+import { SubjectsModule } from './resources/subjects/subjects.module';
 
 @Module({
 	providers: [
@@ -43,6 +44,7 @@ import { UsersModule } from "@resources/users/users.module";
 		RolesModule,
 		SessionsModule,
 		BuildingsModule,
+		SubjectsModule,
 	],
 })
 export class AppModule {}
