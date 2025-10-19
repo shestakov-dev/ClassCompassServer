@@ -24,23 +24,62 @@ export class RolesService {
 			await this.usersService.ensureExistsMany(createRoleDto.userIds);
 		}
 
-		return this.prisma.client.role.create({
-			data: createRoleDto,
+		const role = await this.prisma.client.role.create({
+			data: {
+				// remove userIds from the dto to avoid unknown field error
+				...{ ...createRoleDto, userIds: undefined },
+				users: {
+					connect: createRoleDto.userIds?.map(id => ({ id })) ?? [],
+				},
+			},
+			include: {
+				users: {
+					select: { id: true },
+				},
+			},
 		});
+
+		return {
+			...role,
+			users: undefined,
+			userIds: role.users.map(user => user.id),
+		};
 	}
 
 	async findAllBySchool(schoolId: string) {
 		await this.schoolsService.ensureExists(schoolId);
 
-		return this.prisma.client.role.findMany({
+		const roles = await this.prisma.client.role.findMany({
 			where: { schoolId },
+			include: {
+				users: {
+					select: { id: true },
+				},
+			},
 		});
+
+		return roles.map(role => ({
+			...role,
+			users: undefined,
+			userIds: role.users.map(user => user.id),
+		}));
 	}
 
 	async findOne(id: string) {
-		return this.prisma.client.role.findUniqueOrThrow({
+		const role = await this.prisma.client.role.findUniqueOrThrow({
 			where: { id },
+			include: {
+				users: {
+					select: { id: true },
+				},
+			},
 		});
+
+		return {
+			...role,
+			users: undefined,
+			userIds: role.users.map(user => user.id),
+		};
 	}
 
 	async update(id: string, updateRoleDto: UpdateRoleDto) {
@@ -52,23 +91,40 @@ export class RolesService {
 			await this.usersService.ensureExistsMany(updateRoleDto.userIds);
 		}
 
-		return this.prisma.client.role.update({
+		const role = await this.prisma.client.role.update({
 			where: { id },
-			data: updateRoleDto,
+			data: {
+				// remove userIds from the dto to avoid unknown field error
+				...{ ...updateRoleDto, userIds: undefined },
+				users: updateRoleDto.userIds
+					? { set: updateRoleDto.userIds.map(id => ({ id })) }
+					: undefined,
+			},
+			include: {
+				users: {
+					select: { id: true },
+				},
+			},
 		});
+
+		return {
+			...role,
+			users: undefined,
+			userIds: role.users.map(user => user.id),
+		};
 	}
 
-	async remove(id: string) {
+	remove(id: string) {
 		return this.prisma.client.role.softDelete({
 			where: { id },
 		});
 	}
 
 	async ensureExists(id: string) {
-		return this.prisma.client.role.ensureExists(id);
+		await this.prisma.client.role.ensureExists(id);
 	}
 
 	async ensureExistsMany(ids: string[]) {
-		return this.prisma.client.role.ensureExistsMany(ids);
+		await this.prisma.client.role.ensureExistsMany(ids);
 	}
 }

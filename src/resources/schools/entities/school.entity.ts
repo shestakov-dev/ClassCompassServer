@@ -1,14 +1,16 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { School } from "@prisma/client";
+import { plainToInstance } from "class-transformer";
 
 @ApiSchema({
 	description: "A school object",
 })
 export class SchoolEntity implements School {
-	constructor(partial: Partial<SchoolEntity>) {
-		Object.assign(this, partial);
+	static fromPlain(plain: Partial<SchoolEntity>): SchoolEntity {
+		return plainToInstance(SchoolEntity, plain, {
+			exposeDefaultValues: true,
+		});
 	}
-
 	/**
 	 * The school's unique identifier
 	 * @example "550e8400-e29b-41d4-a716-446655440000"

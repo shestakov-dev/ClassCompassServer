@@ -1,12 +1,15 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Teacher } from "@prisma/client";
+import { plainToInstance } from "class-transformer";
 
 @ApiSchema({
 	description: "A teacher object",
 })
 export class TeacherEntity implements Teacher {
-	constructor(partial: Partial<TeacherEntity>) {
-		Object.assign(this, partial);
+	static fromPlain(plain: Partial<TeacherEntity>): TeacherEntity {
+		return plainToInstance(TeacherEntity, plain, {
+			exposeDefaultValues: true,
+		});
 	}
 
 	/**

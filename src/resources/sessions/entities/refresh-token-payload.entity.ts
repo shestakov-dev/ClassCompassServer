@@ -1,3 +1,4 @@
+import { plainToInstance } from "class-transformer";
 import { IsNumber, IsUUID } from "class-validator";
 
 export type RefreshTokenPayload = {
@@ -7,6 +8,12 @@ export type RefreshTokenPayload = {
 };
 
 export class RefreshTokenPayloadEntity implements RefreshTokenPayload {
+	static fromPlain(plain: RefreshTokenPayload) {
+		return plainToInstance(RefreshTokenPayloadEntity, plain, {
+			exposeDefaultValues: true,
+		});
+	}
+
 	/**
 	 * The session's unique identifier
 	 * @example "550e8400-e29b-41d4-a716-446655440000"

@@ -1,3 +1,4 @@
+import { plainToInstance } from "class-transformer";
 import { IsNumber, IsUUID } from "class-validator";
 
 export type AccessTokenPayload = {
@@ -7,6 +8,12 @@ export type AccessTokenPayload = {
 };
 
 export class AccessTokenPayloadEntity implements AccessTokenPayload {
+	static fromPlain(plain: AccessTokenPayload) {
+		return plainToInstance(AccessTokenPayloadEntity, plain, {
+			exposeDefaultValues: true,
+		});
+	}
+
 	/**
 	 * The user's unique identifier
 	 * @example "550e8400-e29b-41d4-a716-446655440000"

@@ -67,7 +67,7 @@ export class SessionsService {
 			},
 		});
 
-		return plainToInstance(TokensEntity, {
+		return TokensEntity.fromPlain({
 			accessToken,
 			refreshToken,
 		});
@@ -100,9 +100,9 @@ export class SessionsService {
 			},
 		});
 
-		return plainToInstance(TokensEntity, {
+		return TokensEntity.fromPlain({
 			accessToken,
-			refreshToken: refreshToken,
+			refreshToken,
 		});
 	}
 

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { Session, User } from "@prisma/client";
-import { plainToInstance } from "class-transformer";
 
 import { TokensEntity } from "@resources/sessions/entities/tokens.entity";
 
@@ -14,13 +13,13 @@ describe("AuthController", () => {
 	beforeEach(async () => {
 		authServiceMock = {
 			login: jest.fn().mockImplementation(() =>
-				plainToInstance(TokensEntity, {
+				TokensEntity.fromPlain({
 					accessToken: "mockAccessToken",
 					refreshToken: "mockRefreshToken",
 				})
 			),
 			refresh: jest.fn().mockImplementation(() =>
-				plainToInstance(TokensEntity, {
+				TokensEntity.fromPlain({
 					accessToken: "mockNewAccessToken",
 					refreshToken: "mockNewRefreshToken",
 				})
@@ -58,7 +57,7 @@ describe("AuthController", () => {
 				deletedAt: null,
 			};
 
-			const expectedTokens = plainToInstance(TokensEntity, {
+			const expectedTokens = TokensEntity.fromPlain({
 				accessToken: "mockAccessToken",
 				refreshToken: "mockRefreshToken",
 			});
@@ -81,7 +80,7 @@ describe("AuthController", () => {
 				expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day from now
 			};
 
-			const expectedTokens = plainToInstance(TokensEntity, {
+			const expectedTokens = TokensEntity.fromPlain({
 				accessToken: "mockNewAccessToken",
 				refreshToken: "mockNewRefreshToken",
 			});

@@ -22,7 +22,7 @@ export class TeachersService {
 		});
 	}
 
-	async findOne(id: string) {
+	findOne(id: string) {
 		return this.prisma.client.teacher.findUniqueOrThrow({
 			where: { id },
 		});
@@ -39,7 +39,7 @@ export class TeachersService {
 		});
 	}
 
-	async remove(id: string) {
+	remove(id: string) {
 		return this.prisma.client.teacher.softDelete({
 			where: { id },
 		});

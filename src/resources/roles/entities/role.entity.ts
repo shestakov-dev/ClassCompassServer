@@ -1,12 +1,15 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Role } from "@prisma/client";
+import { plainToInstance } from "class-transformer";
 
 @ApiSchema({
 	description: "A role object",
 })
 export class RoleEntity implements Role {
-	constructor(partial: Partial<RoleEntity>) {
-		Object.assign(this, partial);
+	static fromPlain(plain: Partial<RoleEntity>): RoleEntity {
+		return plainToInstance(RoleEntity, plain, {
+			exposeDefaultValues: true,
+		});
 	}
 
 	/**

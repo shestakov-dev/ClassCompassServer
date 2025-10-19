@@ -30,7 +30,9 @@ export class UsersController {
 		OR: ["user:create", "user:*"],
 	})
 	async create(@Body() createUserDto: CreateUserDto) {
-		return new UserEntity(await this.usersService.create(createUserDto));
+		return UserEntity.fromPlain(
+			await this.usersService.create(createUserDto)
+		);
 	}
 
 	/**
@@ -44,7 +46,7 @@ export class UsersController {
 	async findAllBySchool(@Param("schoolId") schoolId: string) {
 		const users = await this.usersService.findAllBySchool(schoolId);
 
-		return users.map(user => new UserEntity(user));
+		return users.map(user => UserEntity.fromPlain(user));
 	}
 
 	/**
@@ -56,7 +58,7 @@ export class UsersController {
 		OR: ["user:read", "user:*"],
 	})
 	async findOne(@Param("id") id: string) {
-		return new UserEntity(await this.usersService.findOne(id));
+		return UserEntity.fromPlain(await this.usersService.findOne(id));
 	}
 
 	/**
@@ -71,7 +73,7 @@ export class UsersController {
 		@Param("id") id: string,
 		@Body() updateUserDto: UpdateUserDto
 	) {
-		return new UserEntity(
+		return UserEntity.fromPlain(
 			await this.usersService.update(id, updateUserDto)
 		);
 	}
@@ -85,6 +87,6 @@ export class UsersController {
 		OR: ["user:delete", "user:*"],
 	})
 	async remove(@Param("id") id: string) {
-		return new UserEntity(await this.usersService.remove(id));
+		return UserEntity.fromPlain(await this.usersService.remove(id));
 	}
 }

@@ -1,13 +1,15 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { User } from "@prisma/client";
-import { Exclude } from "class-transformer";
+import { Exclude, plainToInstance } from "class-transformer";
 
 @ApiSchema({
 	description: "A user object",
 })
 export class UserEntity implements User {
-	constructor(partial: Partial<UserEntity>) {
-		Object.assign(this, partial);
+	static fromPlain(plain: Partial<UserEntity>): UserEntity {
+		return plainToInstance(UserEntity, plain, {
+			exposeDefaultValues: true,
+		});
 	}
 
 	/**

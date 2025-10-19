@@ -31,7 +31,7 @@ export class StudentsController {
 		OR: ["student:create", "student:*"],
 	})
 	async create(@Body() createStudentDto: CreateStudentDto) {
-		return new StudentEntity(
+		return StudentEntity.fromPlain(
 			await this.studentsService.create(createStudentDto)
 		);
 	}
@@ -47,7 +47,7 @@ export class StudentsController {
 	async findAll(@Param("classId", ParseUUIDPipe) classId: string) {
 		const students = await this.studentsService.findAllByClass(classId);
 
-		return students.map(student => new StudentEntity(student));
+		return students.map(student => StudentEntity.fromPlain(student));
 	}
 
 	/**
@@ -59,7 +59,7 @@ export class StudentsController {
 		OR: ["student:read", "student:*"],
 	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
-		return new StudentEntity(await this.studentsService.findOne(id));
+		return StudentEntity.fromPlain(await this.studentsService.findOne(id));
 	}
 
 	/**
@@ -74,7 +74,7 @@ export class StudentsController {
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateStudentDto: UpdateStudentDto
 	) {
-		return new StudentEntity(
+		return StudentEntity.fromPlain(
 			await this.studentsService.update(id, updateStudentDto)
 		);
 	}
@@ -88,6 +88,6 @@ export class StudentsController {
 		OR: ["student:delete", "student:*"],
 	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
-		return new StudentEntity(await this.studentsService.remove(id));
+		return StudentEntity.fromPlain(await this.studentsService.remove(id));
 	}
 }
