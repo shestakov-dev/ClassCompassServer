@@ -54,4 +54,8 @@ export class DailySchedulesService {
 			where: { id },
 		});
 	}
+
+	async ensureExists(id: string) {
+		await this.prisma.client.dailySchedule.ensureExists(id);
+	}
 }

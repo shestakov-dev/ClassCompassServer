@@ -45,14 +45,12 @@ export class ClassEntity implements Class {
 	/**
 	 * Whether the class has been deleted
 	 * @example false
-	 * @default false
 	 */
 	deleted: boolean = false;
 
 	/**
 	 * The time the class was deleted
 	 * @example "2021-09-01T00:00:00.000Z"
-	 * @default null
 	 */
 	deletedAt: Date | null = null;
 }

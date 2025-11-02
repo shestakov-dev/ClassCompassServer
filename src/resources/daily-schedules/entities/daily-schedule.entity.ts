@@ -1,4 +1,4 @@
-import { ApiSchema } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { $Enums, DailySchedule } from "@prisma/client";
 import { plainToInstance } from "class-transformer";
 
@@ -22,6 +22,7 @@ export class DailyScheduleEntity implements DailySchedule {
 	 * The day of the week for the schedule
 	 * @example "tuesday"
 	 */
+	@ApiProperty({ enum: $Enums.Day })
 	day: $Enums.Day;
 
 	/**
@@ -45,14 +46,12 @@ export class DailyScheduleEntity implements DailySchedule {
 	/**
 	 * Whether the daily schedule has been deleted
 	 * @example false
-	 * @default false
 	 */
 	deleted: boolean = false;
 
 	/**
 	 * The time the daily schedule was deleted
 	 * @example "2021-09-01T00:00:00.000Z"
-	 * @default null
 	 */
 	deletedAt: Date | null = null;
 }

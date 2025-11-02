@@ -46,7 +46,6 @@ export class UserEntity implements User {
 	/**
 	 * The user's role identifiers
 	 * @example ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"]
-	 * @default []
 	 */
 	roleIds: string[] = [];
 
@@ -65,14 +64,12 @@ export class UserEntity implements User {
 	/**
 	 * Whether the user has been deleted
 	 * @example false
-	 * @default false
 	 */
 	deleted: boolean = false;
 
 	/**
 	 * The time the user was deleted
 	 * @example "2021-09-01T00:00:00.000Z"
-	 * @default null
 	 */
 	deletedAt: Date | null = null;
 }

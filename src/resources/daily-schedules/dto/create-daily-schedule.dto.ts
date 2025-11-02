@@ -1,4 +1,4 @@
-import { ApiSchema } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { $Enums } from "@prisma/client";
 import { IsEnum, IsUUID } from "class-validator";
 
@@ -11,6 +11,7 @@ export class CreateDailyScheduleDto {
 	 * @example "tuesday"
 	 */
 	@IsEnum($Enums.Day)
+	@ApiProperty({ enum: $Enums.Day })
 	day: $Enums.Day;
 
 	/**

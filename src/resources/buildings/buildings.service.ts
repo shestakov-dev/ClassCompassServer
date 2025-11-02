@@ -48,7 +48,7 @@ export class BuildingsService {
 	}
 
 	remove(id: string) {
-		return this.prisma.client.building.delete({
+		return this.prisma.client.building.softDelete({
 			where: { id },
 		});
 	}

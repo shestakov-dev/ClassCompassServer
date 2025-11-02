@@ -27,9 +27,8 @@ export class FloorEntity implements Floor {
 	/**
 	 * The floor's description
 	 * @example "Third floor of the main building"
-	 * @default null
 	 */
-	description: string | null;
+	description: string | null = null;
 
 	/**
 	 * The floor's building identifier
@@ -52,14 +51,12 @@ export class FloorEntity implements Floor {
 	/**
 	 * Whether the floor has been deleted
 	 * @example false
-	 * @default false
 	 */
 	deleted: boolean = false;
 
 	/**
 	 * The time the floor was deleted
 	 * @example "2021-09-01T00:00:00.000Z"
-	 * @default null
 	 */
 	deletedAt: Date | null = null;
 }

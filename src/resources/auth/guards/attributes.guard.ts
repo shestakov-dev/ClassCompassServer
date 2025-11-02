@@ -57,8 +57,6 @@ export class AttributesGuard implements CanActivate {
 
 		const attributes = await this.usersService.getAttributes(user.id);
 
-		console.log({ attributes, requiredAttributes });
-
 		const isAuthorized = requiredAttributes.every(attribute =>
 			this.checkConditions(attribute, attributes)
 		);

@@ -1,5 +1,5 @@
 import { ApiSchema } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 import { IsValidAttribute } from "@decorators";
 
@@ -25,18 +25,14 @@ export class CreateRoleDto {
 	/**
 	 * The role's attributes
 	 * @example ["subject:read", "dailySchedule:update"]
-	 * @default []
 	 */
-	@IsOptional()
 	@IsValidAttribute({ each: true })
-	attributes?: string[];
+	attributes: string[] = [];
 
 	/**
 	 * The role's user identifiers
 	 * @example ["550e8400-e29b-41d4-a716-446655440000", "550e8400-e29b-41d4-a716-446655440001"]
-	 * @default []
 	 */
-	@IsOptional()
 	@IsUUID(4, { each: true })
-	userIds?: string[];
+	userIds: string[] = [];
 }

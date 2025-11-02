@@ -27,7 +27,6 @@ export class TeacherEntity implements Teacher {
 	/**
 	 * The teacher's subject identifiers
 	 * @example ["550e8400-e29b-41d4-a716-446655440000", "660e8400-e29b-41d4-a716-446655440000"]
-	 * @default []
 	 */
 	subjectIds?: string[] = [];
 
@@ -46,14 +45,12 @@ export class TeacherEntity implements Teacher {
 	/**
 	 * Whether the teacher has been deleted
 	 * @example false
-	 * @default false
 	 */
 	deleted: boolean = false;
 
 	/**
 	 * The time the teacher was deleted
 	 * @example "2021-09-01T00:00:00.000Z"
-	 * @default null
 	 */
 	deletedAt: Date | null = null;
 }

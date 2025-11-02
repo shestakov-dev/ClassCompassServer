@@ -21,7 +21,6 @@ export class CreateFloorDto {
 	/**
 	 * The floor's description
 	 * @example "Third floor of the main building"
-	 * @default null
 	 */
 	@IsOptional()
 	@IsString()

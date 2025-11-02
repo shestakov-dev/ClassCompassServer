@@ -19,6 +19,7 @@ import { SubjectsModule } from './resources/subjects/subjects.module';
 import { FloorsModule } from './resources/floors/floors.module';
 import { RoomsModule } from './resources/rooms/rooms.module';
 import { DailySchedulesModule } from './resources/daily-schedules/daily-schedules.module';
+import { LessonsModule } from './resources/lessons/lessons.module';
 
 @Module({
 	providers: [
@@ -51,6 +52,7 @@ import { DailySchedulesModule } from './resources/daily-schedules/daily-schedule
 		FloorsModule,
 		RoomsModule,
 		DailySchedulesModule,
+		LessonsModule,
 	],
 })
 export class AppModule {}
