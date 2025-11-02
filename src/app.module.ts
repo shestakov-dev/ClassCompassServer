@@ -16,6 +16,9 @@ import { StudentsModule } from "@resources/students/students.module";
 import { TeachersModule } from "@resources/teachers/teachers.module";
 import { UsersModule } from "@resources/users/users.module";
 import { SubjectsModule } from './resources/subjects/subjects.module';
+import { FloorsModule } from './resources/floors/floors.module';
+import { RoomsModule } from './resources/rooms/rooms.module';
+import { DailySchedulesModule } from './resources/daily-schedules/daily-schedules.module';
 
 @Module({
 	providers: [
@@ -45,6 +48,9 @@ import { SubjectsModule } from './resources/subjects/subjects.module';
 		SessionsModule,
 		BuildingsModule,
 		SubjectsModule,
+		FloorsModule,
+		RoomsModule,
+		DailySchedulesModule,
 	],
 })
 export class AppModule {}
