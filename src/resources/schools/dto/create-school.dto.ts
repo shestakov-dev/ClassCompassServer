@@ -6,7 +6,7 @@ import { IsNotEmpty, IsString } from "class-validator";
 })
 export class CreateSchoolDto {
 	/**
-	 * The school's name.
+	 * The school's name
 	 * @example "School A"
 	 */
 	@IsString()

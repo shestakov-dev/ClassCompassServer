@@ -6,7 +6,7 @@ import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 })
 export class CreateClassDto {
 	/**
-	 * The class's name.
+	 * The class's name
 	 * @example "Class A"
 	 */
 	@IsString()
@@ -14,7 +14,7 @@ export class CreateClassDto {
 	name: string;
 
 	/**
-	 * The class's school identifier.
+	 * The class's school identifier
 	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
 	@IsUUID()
