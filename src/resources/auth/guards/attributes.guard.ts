@@ -57,6 +57,8 @@ export class AttributesGuard implements CanActivate {
 
 		const attributes = await this.usersService.getAttributes(user.id);
 
+		console.log({ attributes, requiredAttributes });
+
 		const isAuthorized = requiredAttributes.every(attribute =>
 			this.checkConditions(attribute, attributes)
 		);
@@ -75,7 +77,9 @@ export class AttributesGuard implements CanActivate {
 		userAttributes: Attribute[]
 	): boolean {
 		if (typeof condition === "string") {
-			return userAttributes.includes(condition);
+			return userAttributes.includes(
+				condition.toLowerCase() as Attribute
+			);
 		}
 
 		if ("AND" in condition) {

@@ -32,7 +32,7 @@ export class RoleEntity implements Role {
 
 	/**
 	 * The role's attributes
-	 * @example ["subjects:read", "dailySchedule:update"]
+	 * @example ["subject:read", "dailySchedule:update"]
 	 * @default []
 	 */
 	attributes: string[] = [];

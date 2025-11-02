@@ -1,6 +1,8 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 
+import { IsValidAttribute } from "@decorators";
+
 @ApiSchema({
 	description: "The data required to create a new role",
 })
@@ -22,13 +24,11 @@ export class CreateRoleDto {
 
 	/**
 	 * The role's attributes
-	 * @example ["subjects:read", "dailySchedule:update"]
+	 * @example ["subject:read", "dailySchedule:update"]
 	 * @default []
 	 */
 	@IsOptional()
-	@IsString({ each: true })
-	@IsNotEmpty({ each: true })
-	// TODO: Add validation for attributes
+	@IsValidAttribute({ each: true })
 	attributes?: string[];
 
 	/**
