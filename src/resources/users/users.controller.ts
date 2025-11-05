@@ -4,6 +4,7 @@ import {
 	Delete,
 	Get,
 	Param,
+	ParseUUIDPipe,
 	Patch,
 	Post,
 } from "@nestjs/common";
@@ -30,7 +31,9 @@ export class UsersController {
 		OR: ["user:create", "user:*"],
 	})
 	async create(@Body() createUserDto: CreateUserDto) {
-		return new UserEntity(await this.usersService.create(createUserDto));
+		return UserEntity.fromPlain(
+			await this.usersService.create(createUserDto)
+		);
 	}
 
 	/**
@@ -41,10 +44,10 @@ export class UsersController {
 	@Auth("Access token", {
 		OR: ["user:read", "user:*"],
 	})
-	async findAllBySchool(@Param("schoolId") schoolId: string) {
+	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
 		const users = await this.usersService.findAllBySchool(schoolId);
 
-		return users.map(user => new UserEntity(user));
+		return users.map(user => UserEntity.fromPlain(user));
 	}
 
 	/**
@@ -55,8 +58,8 @@ export class UsersController {
 	@Auth("Access token", {
 		OR: ["user:read", "user:*"],
 	})
-	async findOne(@Param("id") id: string) {
-		return new UserEntity(await this.usersService.findOne(id));
+	async findOne(@Param("id", ParseUUIDPipe) id: string) {
+		return UserEntity.fromPlain(await this.usersService.findOne(id));
 	}
 
 	/**
@@ -68,10 +71,10 @@ export class UsersController {
 		OR: ["user:update", "user:*"],
 	})
 	async update(
-		@Param("id") id: string,
+		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateUserDto: UpdateUserDto
 	) {
-		return new UserEntity(
+		return UserEntity.fromPlain(
 			await this.usersService.update(id, updateUserDto)
 		);
 	}
@@ -84,7 +87,7 @@ export class UsersController {
 	@Auth("Access token", {
 		OR: ["user:delete", "user:*"],
 	})
-	async remove(@Param("id") id: string) {
-		return new UserEntity(await this.usersService.remove(id));
+	async remove(@Param("id", ParseUUIDPipe) id: string) {
+		return UserEntity.fromPlain(await this.usersService.remove(id));
 	}
 }

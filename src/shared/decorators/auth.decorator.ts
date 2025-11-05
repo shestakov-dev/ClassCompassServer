@@ -39,7 +39,7 @@ function conditionToStr(condition: AttributeCondition): string {
 
 export function attributesToString(attributes: AttributeCondition[]): string {
 	if (attributes.length === 0) {
-		console.log("Attributes cannot be empty");
+		console.error("Attributes cannot be empty");
 
 		throw new Error("Attributes cannot be empty");
 	}

@@ -1,12 +1,15 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Role } from "@prisma/client";
+import { plainToInstance } from "class-transformer";
 
 @ApiSchema({
 	description: "A role object",
 })
 export class RoleEntity implements Role {
-	constructor(partial: Partial<RoleEntity>) {
-		Object.assign(this, partial);
+	static fromPlain(plain: Partial<RoleEntity>): RoleEntity {
+		return plainToInstance(RoleEntity, plain, {
+			exposeDefaultValues: true,
+		});
 	}
 
 	/**
@@ -29,15 +32,13 @@ export class RoleEntity implements Role {
 
 	/**
 	 * The role's attributes
-	 * @example ["subjects:read", "dailySchedule:update"]
-	 * @default []
+	 * @example ["subject:read", "dailySchedule:update"]
 	 */
 	attributes: string[] = [];
 
 	/**
 	 * The role's user identifiers
 	 * @example ["550e8400-e29b-41d4-a716-446655440002", "550e8400-e29b-41d4-a716-446655440003"]
-	 * @default []
 	 */
 	userIds: string[] = [];
 
@@ -56,14 +57,12 @@ export class RoleEntity implements Role {
 	/**
 	 * Whether the role has been deleted
 	 * @example false
-	 * @default false
 	 */
 	deleted: boolean = false;
 
 	/**
 	 * The time the role was deleted
 	 * @example "2021-09-01T00:00:00.000Z"
-	 * @default null
 	 */
 	deletedAt: Date | null = null;
 }

@@ -33,7 +33,7 @@ export class StudentsService {
 		});
 	}
 
-	async findOne(id: string) {
+	findOne(id: string) {
 		return this.prisma.client.student.findUniqueOrThrow({
 			where: { id },
 		});
@@ -54,7 +54,7 @@ export class StudentsService {
 		});
 	}
 
-	async remove(id: string) {
+	remove(id: string) {
 		return this.prisma.client.student.softDelete({
 			where: { id },
 		});

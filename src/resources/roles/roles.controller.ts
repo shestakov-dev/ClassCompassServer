@@ -31,7 +31,9 @@ export class RolesController {
 		OR: ["role:create", "role:*"],
 	})
 	async create(@Body() createRoleDto: CreateRoleDto) {
-		return new RoleEntity(await this.rolesService.create(createRoleDto));
+		return RoleEntity.fromPlain(
+			await this.rolesService.create(createRoleDto)
+		);
 	}
 
 	/**
@@ -45,7 +47,7 @@ export class RolesController {
 	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
 		const roles = await this.rolesService.findAllBySchool(schoolId);
 
-		return roles.map(role => new RoleEntity(role));
+		return roles.map(role => RoleEntity.fromPlain(role));
 	}
 
 	/**
@@ -57,7 +59,7 @@ export class RolesController {
 		OR: ["role:read", "role:*"],
 	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
-		return new RoleEntity(await this.rolesService.findOne(id));
+		return RoleEntity.fromPlain(await this.rolesService.findOne(id));
 	}
 
 	/**
@@ -72,7 +74,7 @@ export class RolesController {
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateRoleDto: UpdateRoleDto
 	) {
-		return new RoleEntity(
+		return RoleEntity.fromPlain(
 			await this.rolesService.update(id, updateRoleDto)
 		);
 	}
@@ -86,6 +88,6 @@ export class RolesController {
 		OR: ["role:delete", "role:*"],
 	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
-		return new RoleEntity(await this.rolesService.remove(id));
+		return RoleEntity.fromPlain(await this.rolesService.remove(id));
 	}
 }

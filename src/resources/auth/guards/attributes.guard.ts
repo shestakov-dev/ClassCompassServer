@@ -75,7 +75,9 @@ export class AttributesGuard implements CanActivate {
 		userAttributes: Attribute[]
 	): boolean {
 		if (typeof condition === "string") {
-			return userAttributes.includes(condition);
+			return userAttributes.includes(
+				condition.toLowerCase() as Attribute
+			);
 		}
 
 		if ("AND" in condition) {

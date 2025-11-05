@@ -1,12 +1,15 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Class } from "@prisma/client";
+import { plainToInstance } from "class-transformer";
 
 @ApiSchema({
 	description: "A class object",
 })
 export class ClassEntity implements Class {
-	constructor(partial: Partial<ClassEntity>) {
-		Object.assign(this, partial);
+	static fromPlain(plain: Partial<ClassEntity>): ClassEntity {
+		return plainToInstance(ClassEntity, plain, {
+			exposeDefaultValues: true,
+		});
 	}
 
 	/**
@@ -42,14 +45,12 @@ export class ClassEntity implements Class {
 	/**
 	 * Whether the class has been deleted
 	 * @example false
-	 * @default false
 	 */
 	deleted: boolean = false;
 
 	/**
 	 * The time the class was deleted
 	 * @example "2021-09-01T00:00:00.000Z"
-	 * @default null
 	 */
 	deletedAt: Date | null = null;
 }

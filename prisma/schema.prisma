@@ -7,6 +7,22 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+enum LessonWeek {
+    odd
+    even
+    every
+}
+
+enum Day {
+    monday
+    tuesday
+    wednesday
+    thursday
+    friday
+    saturday
+    sunday
+}
+
 // TODO: Add more fields for things like ip address, user agent, etc.
 model Session {
     id           String   @id @default(uuid())
@@ -64,7 +80,6 @@ model User {
     updatedAt DateTime  @updatedAt
     deleted   Boolean   @default(false)
     deletedAt DateTime?
-    // deletedBy String?
 
     @@index([schoolId])
 }
@@ -79,11 +94,72 @@ model School {
 
     roles Role[]
 
+    buildings Building[]
+
+    subjects Subject[]
+
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deleted   Boolean   @default(false)
     deletedAt DateTime?
-    // deletedBy String?
+}
+
+model Building {
+    id   String @id @default(uuid())
+    name String
+
+    schoolId String
+    school   School @relation(fields: [schoolId], references: [id])
+
+    floors Floor[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deleted   Boolean   @default(false)
+    deletedAt DateTime?
+
+    // The building name should be unique within a school
+    @@unique([schoolId, name])
+    @@index([schoolId])
+}
+
+model Floor {
+    id          String  @id @default(uuid())
+    number      Int
+    description String?
+
+    buildingId String
+    building   Building @relation(fields: [buildingId], references: [id])
+
+    rooms Room[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deleted   Boolean   @default(false)
+    deletedAt DateTime?
+
+    // The floor number should be unique within a building
+    @@unique([buildingId, number])
+    @@index([buildingId])
+}
+
+model Room {
+    id   String @id @default(uuid())
+    name String
+
+    floorId String
+    floor   Floor  @relation(fields: [floorId], references: [id])
+
+    lessons Lesson[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deleted   Boolean   @default(false)
+    deletedAt DateTime?
+
+    // The room name should be unique within a floor
+    @@unique([floorId, name])
+    @@index([floorId])
 }
 
 model Teacher {
@@ -92,11 +168,35 @@ model Teacher {
     userId String @unique
     user   User   @relation(fields: [userId], references: [id])
 
+    subjects Subject[]
+
+    lessons Lesson[]
+
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deleted   Boolean   @default(false)
     deletedAt DateTime?
-    // deletedBy String?
+}
+
+model Subject {
+    id   String @id @default(uuid())
+    name String
+
+    schoolId String
+    school   School @relation(fields: [schoolId], references: [id])
+
+    teachers Teacher[]
+
+    lessons Lesson[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deleted   Boolean   @default(false)
+    deletedAt DateTime?
+
+    // The subject name should be unique within a school
+    @@unique([schoolId, name])
+    @@index([schoolId])
 }
 
 model Class {
@@ -108,11 +208,12 @@ model Class {
 
     students Student[]
 
+    weeklySchedule DailySchedule[]
+
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deleted   Boolean   @default(false)
     deletedAt DateTime?
-    // deletedBy String?
 
     // The class name should be unique within a school
     @@unique([schoolId, name])
@@ -132,7 +233,57 @@ model Student {
     updatedAt DateTime  @updatedAt
     deleted   Boolean   @default(false)
     deletedAt DateTime?
-    // deletedBy String?
 
     @@index([classId])
+}
+
+model DailySchedule {
+    id  String @id @default(uuid())
+    day Day
+
+    classId String
+    class   Class  @relation(fields: [classId], references: [id])
+
+    lessons Lesson[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deleted   Boolean   @default(false)
+    deletedAt DateTime?
+
+    @@unique([classId, day])
+    @@index([classId])
+    @@index([day])
+}
+
+model Lesson {
+    id           String     @id @default(uuid())
+    lessonNumber Int
+    startTime    DateTime
+    endTime      DateTime
+    lessonWeek   LessonWeek @default(every)
+
+    roomId String
+    room   Room   @relation(fields: [roomId], references: [id])
+
+    teacherId String
+    teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+    subjectId String
+    subject   Subject @relation(fields: [subjectId], references: [id])
+
+    dailyScheduleId String
+    dailySchedule   DailySchedule @relation(fields: [dailyScheduleId], references: [id])
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deleted   Boolean   @default(false)
+    deletedAt DateTime?
+
+    // The lesson number should be unique within a daily schedule and week type
+    @@unique([lessonNumber, lessonWeek, dailyScheduleId])
+    @@index([roomId])
+    @@index([teacherId])
+    @@index([subjectId])
+    @@index([dailyScheduleId])
 }

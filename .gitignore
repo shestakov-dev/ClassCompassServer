@@ -132,7 +132,7 @@ dist
 uploads/
 temp.sh
 
-.vscode/
+.vscode/*
 
 # Local .terraform directories
 **/.terraform/*

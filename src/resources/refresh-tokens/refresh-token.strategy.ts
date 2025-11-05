@@ -7,7 +7,6 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import * as argon2 from "argon2";
-import { plainToInstance } from "class-transformer";
 import { validateOrReject } from "class-validator";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
@@ -25,7 +24,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
 	"refresh-token"
 ) {
 	constructor(
-		private readonly configService: ConfigService,
+		protected readonly configService: ConfigService,
 		@Inject(forwardRef(() => SessionsService))
 		private readonly sessionsService: SessionsService
 	) {
@@ -42,10 +41,8 @@ export class RefreshTokenStrategy extends PassportStrategy(
 		req: RequestWithSession,
 		refreshTokenPayload: RefreshTokenPayload
 	) {
-		const refreshTokenPayloadEnity = plainToInstance(
-			RefreshTokenPayloadEntity,
-			refreshTokenPayload
-		);
+		const refreshTokenPayloadEnity =
+			RefreshTokenPayloadEntity.fromPlain(refreshTokenPayload);
 
 		// TODO: Move the error handling to a global exception filter
 		await validateOrReject(refreshTokenPayloadEnity).catch(() => {

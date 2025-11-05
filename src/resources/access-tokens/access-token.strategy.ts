@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
-import { plainToInstance } from "class-transformer";
 import { validateOrReject } from "class-validator";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
@@ -18,7 +17,7 @@ export class AccessTokenStrategy extends PassportStrategy(
 	"access-token"
 ) {
 	constructor(
-		private readonly configService: ConfigService,
+		protected readonly configService: ConfigService,
 		private readonly usersService: UsersService
 	) {
 		super({
@@ -30,10 +29,8 @@ export class AccessTokenStrategy extends PassportStrategy(
 	}
 
 	async validate(accessTokenPayload: AccessTokenPayload) {
-		const accessTokenPayloadEntity = plainToInstance(
-			AccessTokenPayloadEntity,
-			accessTokenPayload
-		);
+		const accessTokenPayloadEntity =
+			AccessTokenPayloadEntity.fromPlain(accessTokenPayload);
 
 		// TODO: Move the error handling to a global exception filter
 		await validateOrReject(accessTokenPayloadEntity).catch(() => {

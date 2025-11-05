@@ -33,7 +33,7 @@ export class SchoolsController {
 	})
 	@Auth("Access token", { OR: ["school:create", "school:*"] })
 	async create(@Body() createSchoolDto: CreateSchoolDto) {
-		return new SchoolEntity(
+		return SchoolEntity.fromPlain(
 			await this.schoolsService.create(createSchoolDto)
 		);
 	}
@@ -52,7 +52,9 @@ export class SchoolsController {
 	async findAll() {
 		const schools = await this.schoolsService.findAll();
 
-		return schools.map(school => new SchoolEntity(school));
+		return Promise.all(
+			schools.map(school => SchoolEntity.fromPlain(school))
+		);
 	}
 
 	/**
@@ -64,7 +66,7 @@ export class SchoolsController {
 		OR: ["school:read", "school:*"],
 	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
-		return new SchoolEntity(await this.schoolsService.findOne(id));
+		return SchoolEntity.fromPlain(await this.schoolsService.findOne(id));
 	}
 
 	/**
@@ -79,7 +81,7 @@ export class SchoolsController {
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateSchoolDto: UpdateSchoolDto
 	) {
-		return new SchoolEntity(
+		return SchoolEntity.fromPlain(
 			await this.schoolsService.update(id, updateSchoolDto)
 		);
 	}
@@ -93,6 +95,6 @@ export class SchoolsController {
 		OR: ["school:delete", "school:*"],
 	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
-		return new SchoolEntity(await this.schoolsService.remove(id));
+		return SchoolEntity.fromPlain(await this.schoolsService.remove(id));
 	}
 }

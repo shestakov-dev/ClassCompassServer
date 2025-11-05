@@ -31,7 +31,7 @@ export class TeachersController {
 		OR: ["teacher:create", "teacher:*"],
 	})
 	async create(@Body() createTeacherDto: CreateTeacherDto) {
-		return new TeacherEntity(
+		return TeacherEntity.fromPlain(
 			await this.teachersService.create(createTeacherDto)
 		);
 	}
@@ -45,7 +45,7 @@ export class TeachersController {
 		OR: ["teacher:read", "teacher:*"],
 	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
-		return new TeacherEntity(await this.teachersService.findOne(id));
+		return TeacherEntity.fromPlain(await this.teachersService.findOne(id));
 	}
 
 	/**
@@ -60,7 +60,7 @@ export class TeachersController {
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateTeacherDto: UpdateTeacherDto
 	) {
-		return new TeacherEntity(
+		return TeacherEntity.fromPlain(
 			await this.teachersService.update(id, updateTeacherDto)
 		);
 	}
@@ -74,6 +74,6 @@ export class TeachersController {
 		OR: ["teacher:delete", "teacher:*"],
 	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
-		return new TeacherEntity(await this.teachersService.remove(id));
+		return TeacherEntity.fromPlain(await this.teachersService.remove(id));
 	}
 }

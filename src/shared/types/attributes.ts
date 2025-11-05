@@ -12,6 +12,7 @@ type CustomAttribute = never;
 export type Attribute = StandardAttribute | CustomAttribute;
 
 // TODO: Make better attribute validation
+// Transform model names to lowercase for comparison
 const MODELS = new Set(
 	Object.keys(Prisma.ModelName).map(model => model.toLowerCase())
 );
@@ -24,7 +25,10 @@ export function isAttribute(attribute: unknown): attribute is Attribute {
 
 	const [model, action] = attribute.split(":");
 
-	return MODELS.has(model) && ACTIONS.has(action as Actions);
+	return (
+		MODELS.has(model.toLowerCase()) &&
+		ACTIONS.has(action.toLowerCase() as Actions)
+	);
 }
 
 export type AttributeCondition =

@@ -1,12 +1,15 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Student } from "@prisma/client";
+import { plainToInstance } from "class-transformer";
 
 @ApiSchema({
 	description: "A student object",
 })
 export class StudentEntity implements Student {
-	constructor(partial: Partial<StudentEntity>) {
-		Object.assign(this, partial);
+	static fromPlain(plain: Partial<StudentEntity>): StudentEntity {
+		return plainToInstance(StudentEntity, plain, {
+			exposeDefaultValues: true,
+		});
 	}
 
 	/**
@@ -42,14 +45,12 @@ export class StudentEntity implements Student {
 	/**
 	 * Whether the student has been deleted
 	 * @example false
-	 * @default false
 	 */
 	deleted: boolean = false;
 
 	/**
 	 * The time the student was deleted
 	 * @example "2021-09-01T00:00:00.000Z"
-	 * @default null
 	 */
 	deletedAt: Date | null = null;
 }
