@@ -59,6 +59,10 @@ async function bootstrap() {
 	SwaggerModule.setup("api", app, document, {
 		customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK),
 		customSiteTitle: "Class Compass API Docs",
+		swaggerOptions: {
+			docExpansion: "none", // collapse operations by default
+			tagsSorter: "alpha", // sort tags alphabetically
+		},
 	});
 
 	app.useGlobalFilters(new PrismaClientExceptionFilter());
