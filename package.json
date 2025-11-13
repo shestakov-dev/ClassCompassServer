@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"private": true,
 	"description": "",
-	"license": "UNLICENSED",
+	"license": "CC BY-NC-SA 4.0",
 	"author": "Alexander Shestakov",
 	"scripts": {
 		"build": "nest build",
