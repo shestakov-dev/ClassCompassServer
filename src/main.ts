@@ -30,6 +30,7 @@ async function bootstrap() {
 		.setDescription("An API for the Class Compass application")
 		.setVersion("1.0")
 		.addServer("/")
+		.addServer("https://api.classcompass.shestakov.app")
 		.addServer("http://localhost:8393")
 		.addBearerAuth(
 			{

@@ -5,14 +5,15 @@ WORKDIR /app
 COPY package*.json .
 COPY pnpm-lock.yaml .
 
-RUN npm install
+RUN npm install -g pnpm
+RUN pnpm install
 
 COPY . .
 
 # Generate the Prisma client and types
-RUN npx prisma generate
+RUN pnpx prisma generate
 
-RUN npm run build
+RUN pnpm run build
 
 FROM node:lts-alpine AS runner
 

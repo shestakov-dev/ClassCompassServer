@@ -1,0 +1,23 @@
+FROM node:lts-alpine
+
+WORKDIR /app
+
+# install pnpm
+RUN npm install -g pnpm
+
+# copy only lock + manifests first for cached installs
+COPY package*.json pnpm-lock.yaml ./
+
+# install dependencies into image (will be available for container; host code will be mounted over /app)
+RUN pnpm install --frozen-lockfile --offline || pnpm install --frozen-lockfile
+
+COPY ./prisma ./prisma
+
+# Generate the Prisma client and types
+RUN pnpx prisma generate
+
+# expose port used by app
+EXPOSE 8393
+
+# default dev command — expects a "start:dev" script in package.json (Nest: usually "nest start --watch")
+CMD ["pnpm", "run", "start:dev"]
