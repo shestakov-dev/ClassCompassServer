@@ -1,10 +1,7 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { hash } from "bcryptjs";
+import { Injectable } from "@nestjs/common";
 
-import { RolesService } from "@resources/roles/roles.service";
+import { KratosService } from "@resources/ory/kratos/kratos.service";
 import { SchoolsService } from "@resources/schools/schools.service";
-
-import { Attribute, isAttribute } from "@shared/types/attributes";
 
 import { PrismaService } from "@prisma/prisma.service";
 
@@ -16,70 +13,39 @@ export class UsersService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly schoolsService: SchoolsService,
-		@Inject(forwardRef(() => RolesService))
-		private readonly rolesService: RolesService
+		private readonly kratosService: KratosService
 	) {}
 
 	async create(createUserDto: CreateUserDto) {
 		await this.schoolsService.ensureExists(createUserDto.schoolId);
 
-		if (createUserDto.roleIds) {
-			await this.rolesService.ensureExistsMany(createUserDto.roleIds);
-		}
-
-		// hash the user's password with 12 rounds of salt
-		createUserDto.password = await hash(createUserDto.password, 12);
-
-		const user = await this.prisma.client.user.create({
-			data: {
-				// remove roleIds from the dto to avoid unknown field error
-				...{ ...createUserDto, roleIds: undefined },
-				roles: {
-					connect: createUserDto.roleIds?.map(id => ({ id })) ?? [],
-				},
-			},
-			include: {
-				roles: { select: { id: true }, where: { deleted: false } },
-			},
+		// Create an identity for the user in Ory Kratos
+		const kratosIdentity = await this.kratosService.createIdentity({
+			email: createUserDto.email,
+			firstName: createUserDto.firstName,
+			lastName: createUserDto.lastName,
 		});
 
-		return {
-			...user,
-			roles: undefined,
-			roleIds: user.roles.map(role => role.id),
-		};
+		return this.prisma.client.user.create({
+			data: {
+				...createUserDto,
+				identityId: kratosIdentity.id,
+			},
+		});
 	}
 
 	async findAllBySchool(schoolId: string) {
 		await this.schoolsService.ensureExists(schoolId);
 
-		const users = await this.prisma.client.user.findMany({
+		return this.prisma.client.user.findMany({
 			where: { schoolId },
-			include: {
-				roles: { select: { id: true }, where: { deleted: false } },
-			},
 		});
-
-		return users.map(user => ({
-			...user,
-			roles: undefined,
-			roleIds: user.roles.map(role => role.id),
-		}));
 	}
 
-	async findOne(id: string) {
-		const user = await this.prisma.client.user.findUniqueOrThrow({
+	findOne(id: string) {
+		return this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
-			include: {
-				roles: { select: { id: true }, where: { deleted: false } },
-			},
 		});
-
-		return {
-			...user,
-			roles: undefined,
-			roleIds: user.roles.map(role => role.id),
-		};
 	}
 
 	async update(id: string, updateUserDto: UpdateUserDto) {
@@ -87,33 +53,18 @@ export class UsersService {
 			await this.schoolsService.ensureExists(updateUserDto.schoolId);
 		}
 
-		if (updateUserDto.roleIds) {
-			await this.rolesService.ensureExistsMany(updateUserDto.roleIds);
-		}
-
-		const user = await this.prisma.client.user.update({
+		const updatedUser = await this.prisma.client.user.update({
 			where: { id },
-			data: {
-				// remove roleIds from the dto to avoid unknown field error
-				...{ ...updateUserDto, roleIds: undefined },
-				roles: updateUserDto.roleIds
-					? {
-							set: updateUserDto.roleIds.map(roleId => ({
-								id: roleId,
-							})),
-						}
-					: undefined,
-			},
-			include: {
-				roles: { select: { id: true }, where: { deleted: false } },
-			},
+			data: updateUserDto,
 		});
 
-		return {
-			...user,
-			roles: undefined,
-			roleIds: user.roles.map(role => role.id),
-		};
+		await this.kratosService.updateIdentity(updatedUser.identityId, {
+			email: updatedUser.email,
+			firstName: updatedUser.firstName,
+			lastName: updatedUser.lastName,
+		});
+
+		return updatedUser;
 	}
 
 	remove(id: string) {
@@ -126,17 +77,6 @@ export class UsersService {
 		return this.prisma.client.user.findUniqueOrThrow({
 			where: { email },
 		});
-	}
-
-	async getAttributes(id: string) {
-		const user = await this.prisma.client.user.findUniqueOrThrow({
-			where: { id },
-			select: { roles: { select: { attributes: true } } },
-		});
-
-		return user.roles.reduce((attributes: Attribute[], role) => {
-			return [...attributes, ...role.attributes.filter(isAttribute)];
-		}, []);
 	}
 
 	async ensureExists(id: string) {
