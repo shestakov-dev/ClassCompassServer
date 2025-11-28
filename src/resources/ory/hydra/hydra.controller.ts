@@ -1,8 +1,10 @@
 import { Controller, Get, Query, Res } from "@nestjs/common";
+import { ApiExcludeController } from "@nestjs/swagger";
 import { Response } from "express";
 
 import { UrlService } from "@resources/url/url.service";
 
+@ApiExcludeController()
 @Controller("auth/hydra")
 export class HydraController {
 	constructor(private readonly urlService: UrlService) {}

@@ -7,6 +7,7 @@ import {
 	Res,
 	UnauthorizedException,
 } from "@nestjs/common";
+import { ApiExcludeEndpoint } from "@nestjs/swagger";
 import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
@@ -18,6 +19,9 @@ export const REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
+	/**
+	 * The beginning of the OIDC flow.
+	 */
 	@Get("login")
 	async login(@Res() res: Response) {
 		const authorizationUrl = await this.authService.getAuthorizationUrl();
@@ -27,6 +31,7 @@ export class AuthController {
 
 	// get the code and state from hydra and we exchange it for tokens
 	// this is the final step in the OIDC flow
+	@ApiExcludeEndpoint()
 	@Get("callback")
 	async callback(
 		@Req() req: Request,
@@ -54,6 +59,9 @@ export class AuthController {
 		return { tokens, claims };
 	}
 
+	/**
+	 * Refresh the access token using the refresh token.
+	 */
 	@Get("refresh")
 	async refresh(
 		@Req() req: Request,
@@ -85,6 +93,10 @@ export class AuthController {
 		return { tokens };
 	}
 
+	/**
+	 * Logout the user by clearing the cookies and redirecting to
+	 * the OIDC provider's logout endpoint.
+	 */
 	@Get("logout")
 	async logout(
 		@Res({ passthrough: true }) res: Response,

@@ -6,11 +6,13 @@ import {
 	Res,
 	UnauthorizedException,
 } from "@nestjs/common";
+import { ApiExcludeController } from "@nestjs/swagger";
 import { Response } from "express";
 
 import { KratosService } from "./kratos.service";
 import { HydraService } from "../hydra/hydra.service";
 
+@ApiExcludeController()
 @Controller("auth/kratos")
 export class KratosController {
 	constructor(
