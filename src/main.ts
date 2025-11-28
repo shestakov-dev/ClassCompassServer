@@ -1,12 +1,14 @@
 import { ClassSerializerInterceptor, ValidationPipe } from "@nestjs/common";
 import { NestFactory, Reflector } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as cookieParser from "cookie-parser";
 import { SwaggerTheme, SwaggerThemeNameEnum } from "swagger-themes";
 
 import {
-	ACCESS_TOKEN_KEY,
-	REFRESH_TOKEN_KEY,
-} from "@shared/decorators/auth.decorator";
+	ACCESS_TOKEN_COOKIE_NAME,
+	REFRESH_TOKEN_COOKIE_NAME,
+} from "@resources/auth/auth.controller";
+
 import { PrismaClientExceptionFilter } from "@shared/filters/prisma-client-exception/prisma-client-exception.filter";
 
 import { AppModule } from "./app.module";
@@ -25,6 +27,8 @@ async function bootstrap() {
 		new ClassSerializerInterceptor(app.get(Reflector))
 	);
 
+	app.use(cookieParser());
+
 	const config = new DocumentBuilder()
 		.setTitle("Class Compass API")
 		.setDescription("An API for the Class Compass application")
@@ -32,22 +36,12 @@ async function bootstrap() {
 		.addServer("/")
 		.addServer("https://api.classcompass.shestakov.app")
 		.addServer("http://localhost:8393")
-		.addBearerAuth(
-			{
-				type: "http",
-				scheme: "bearer",
-				bearerFormat: "JWT",
-			},
-			ACCESS_TOKEN_KEY
-		)
-		.addBearerAuth(
-			{
-				type: "http",
-				scheme: "bearer",
-				bearerFormat: "JWT",
-			},
-			REFRESH_TOKEN_KEY
-		)
+		.addCookieAuth(ACCESS_TOKEN_COOKIE_NAME, {
+			type: "openIdConnect",
+		})
+		.addCookieAuth(REFRESH_TOKEN_COOKIE_NAME, {
+			type: "openIdConnect",
+		})
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config, {
@@ -67,8 +61,6 @@ async function bootstrap() {
 	});
 
 	app.useGlobalFilters(new PrismaClientExceptionFilter());
-
-	app.enableCors();
 
 	await app.listen(process.env.PORT ?? 8393);
 }

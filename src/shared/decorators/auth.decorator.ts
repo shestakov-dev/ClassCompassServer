@@ -4,11 +4,7 @@ import {
 	SetMetadata,
 	UnauthorizedException,
 } from "@nestjs/common";
-import {
-	ApiBearerAuth,
-	ApiForbiddenResponse,
-	ApiUnauthorizedResponse,
-} from "@nestjs/swagger";
+import { ApiForbiddenResponse, ApiUnauthorizedResponse } from "@nestjs/swagger";
 
 import { AttributeCondition } from "@shared/types/attributes";
 
@@ -75,7 +71,7 @@ export function Auth(type: AuthType, ...attributes: AttributeCondition[]) {
 		}
 	}
 
-	decorators.push(ApiBearerAuth(type));
+	// decorators.push(ApiBearerAuth(type));
 
 	decorators.push(
 		ApiUnauthorizedResponse({
