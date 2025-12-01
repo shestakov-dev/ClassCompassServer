@@ -1,18 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { HydraController } from './hydra.controller';
+import { Test, TestingModule } from "@nestjs/testing";
 
-describe('HydraController', () => {
-  let controller: HydraController;
+import { HydraController } from "./hydra.controller";
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [HydraController],
-    }).compile();
+describe("HydraController", () => {
+	let controller: HydraController;
 
-    controller = module.get<HydraController>(HydraController);
-  });
+	beforeEach(async () => {
+		const module: TestingModule = await Test.createTestingModule({
+			controllers: [HydraController],
+		}).compile();
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+		controller = module.get<HydraController>(HydraController);
+	});
+
+	it("should be defined", () => {
+		expect(controller).toBeDefined();
+	});
 });

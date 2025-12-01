@@ -1,18 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { KratosController } from './kratos.controller';
+import { Test, TestingModule } from "@nestjs/testing";
 
-describe('KratosController', () => {
-  let controller: KratosController;
+import { KratosController } from "./kratos.controller";
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [KratosController],
-    }).compile();
+describe("KratosController", () => {
+	let controller: KratosController;
 
-    controller = module.get<KratosController>(KratosController);
-  });
+	beforeEach(async () => {
+		const module: TestingModule = await Test.createTestingModule({
+			controllers: [KratosController],
+		}).compile();
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+		controller = module.get<KratosController>(KratosController);
+	});
+
+	it("should be defined", () => {
+		expect(controller).toBeDefined();
+	});
 });
