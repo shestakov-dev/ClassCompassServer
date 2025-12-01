@@ -20,6 +20,7 @@ export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
 	/**
+	 * THIS ENDPOINT ONLY WORKS WHEN OPENED IN A BROWSER!
 	 * The beginning of the OIDC flow.
 	 */
 	@Get("login")

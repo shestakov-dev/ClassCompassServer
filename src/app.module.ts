@@ -19,8 +19,6 @@ import { TeachersModule } from "@resources/teachers/teachers.module";
 import { UrlModule } from "@resources/url/url.module";
 import { UsersModule } from "@resources/users/users.module";
 
-import { AppController } from "./app.controller";
-
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
@@ -56,6 +54,5 @@ import { AppController } from "./app.controller";
 		OryModule,
 		UrlModule,
 	],
-	controllers: [AppController],
 })
 export class AppModule {}

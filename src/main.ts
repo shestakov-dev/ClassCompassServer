@@ -4,11 +4,6 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as cookieParser from "cookie-parser";
 import { SwaggerTheme, SwaggerThemeNameEnum } from "swagger-themes";
 
-import {
-	ACCESS_TOKEN_COOKIE_NAME,
-	REFRESH_TOKEN_COOKIE_NAME,
-} from "@resources/auth/auth.controller";
-
 import { PrismaClientExceptionFilter } from "@shared/filters/prisma-client-exception/prisma-client-exception.filter";
 
 import { AppModule } from "./app.module";
@@ -36,12 +31,6 @@ async function bootstrap() {
 		.addServer("/")
 		.addServer("https://api.classcompass.shestakov.app")
 		.addServer("http://localhost:8393")
-		.addCookieAuth(ACCESS_TOKEN_COOKIE_NAME, {
-			type: "openIdConnect",
-		})
-		.addCookieAuth(REFRESH_TOKEN_COOKIE_NAME, {
-			type: "openIdConnect",
-		})
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config, {
