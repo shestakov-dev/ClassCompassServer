@@ -1,9 +1,11 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { APP_GUARD } from "@nestjs/core";
 import { ScheduleModule } from "@nestjs/schedule";
 import { RedisModule } from "@nestjs-modules/ioredis";
 
 import { AuthModule } from "@resources/auth/auth.module";
+import { OathkeeperIdTokenGuard } from "@resources/auth/guards/oathkeeper.guard";
 import { BuildingsModule } from "@resources/buildings/buildings.module";
 import { ClassesModule } from "@resources/classes/classes.module";
 import { DailySchedulesModule } from "@resources/daily-schedules/daily-schedules.module";
@@ -20,6 +22,12 @@ import { UrlModule } from "@resources/url/url.module";
 import { UsersModule } from "@resources/users/users.module";
 
 @Module({
+	providers: [
+		{
+			provide: APP_GUARD,
+			useClass: OathkeeperIdTokenGuard,
+		},
+	],
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
 		RedisModule.forRootAsync({
