@@ -6,6 +6,8 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 
 import { UsersService } from "@resources/users/users.service";
 
+export const OATHKEEPER_GUEST_SUBJECT = "guest";
+
 @Injectable()
 export class OathkeeperStrategy extends PassportStrategy(
 	Strategy,
@@ -35,6 +37,12 @@ export class OathkeeperStrategy extends PassportStrategy(
 	validate(payload: any) {
 		if (!payload.sub) {
 			throw new UnauthorizedException("Invalid token: missing subject");
+		}
+
+		if (payload.sub === OATHKEEPER_GUEST_SUBJECT) {
+			return {
+				id: OATHKEEPER_GUEST_SUBJECT,
+			};
 		}
 
 		return this.usersService.findOneByIdentityId(payload.sub);
