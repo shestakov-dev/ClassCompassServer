@@ -13,8 +13,8 @@ export class AuthService {
 		private readonly kratosService: KratosService
 	) {}
 
-	getAuthorizationUrl() {
-		return this.oidcService.buildAuthorizationUrl();
+	getAuthorizationUrl(redirect?: string) {
+		return this.oidcService.buildAuthorizationUrl(redirect);
 	}
 
 	handleCallback(originalUrl: string, state: string) {

@@ -13,6 +13,7 @@ import { UrlService } from "@resources/url/url.service";
 interface OidcStateData {
 	codeVerifier: string;
 	nonce: string;
+	redirect?: string;
 }
 
 @Injectable()
@@ -38,7 +39,7 @@ export class OidcService implements OnModuleInit {
 		);
 	}
 
-	async buildAuthorizationUrl(): Promise<URL> {
+	async buildAuthorizationUrl(redirect?: string): Promise<URL> {
 		const codeVerifier = client.randomPKCECodeVerifier();
 		const codeChallenge =
 			await client.calculatePKCECodeChallenge(codeVerifier);
@@ -50,6 +51,7 @@ export class OidcService implements OnModuleInit {
 		await this.writeOidcStateData(state, {
 			codeVerifier,
 			nonce,
+			redirect,
 		});
 
 		const url = client.buildAuthorizationUrl(this.config, {
@@ -71,12 +73,25 @@ export class OidcService implements OnModuleInit {
 			throw new UnauthorizedException("Invalid or expired OIDC state");
 		}
 
-		return client.authorizationCodeGrant(this.config, currentUrl, {
-			pkceCodeVerifier: oidcStateData.codeVerifier,
-			expectedNonce: oidcStateData.nonce,
-			expectedState: state,
-			idTokenExpected: true,
-		});
+		const tokens = await client.authorizationCodeGrant(
+			this.config,
+			currentUrl,
+			{
+				pkceCodeVerifier: oidcStateData.codeVerifier,
+				expectedNonce: oidcStateData.nonce,
+				expectedState: state,
+				idTokenExpected: true,
+			}
+		);
+
+		const redirect =
+			oidcStateData.redirect ??
+			this.urlService.getDefaultRedirectUrl().toString();
+
+		return {
+			tokens,
+			redirect,
+		};
 	}
 
 	async refreshTokenGrant(refreshToken: string) {

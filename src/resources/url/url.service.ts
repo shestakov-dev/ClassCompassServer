@@ -67,4 +67,12 @@ export class UrlService {
 			)
 		);
 	}
+
+	getDefaultRedirectUrl(): URL {
+		const urlString = this.configService.getOrThrow<string>(
+			"APP_DEFAULT_REDIRECT_URL"
+		);
+
+		return new URL(urlString);
+	}
 }

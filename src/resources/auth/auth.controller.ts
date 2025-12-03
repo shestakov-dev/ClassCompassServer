@@ -12,8 +12,8 @@ import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
 
-export const ACCESS_TOKEN_COOKIE_NAME = "access_token";
-export const REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+const ACCESS_TOKEN_COOKIE_NAME = "access_token";
+const REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
 
 @Controller("auth")
 export class AuthController {
@@ -24,8 +24,9 @@ export class AuthController {
 	 * The beginning of the OIDC flow.
 	 */
 	@Get("login")
-	async login(@Res() res: Response) {
-		const authorizationUrl = await this.authService.getAuthorizationUrl();
+	async login(@Res() res: Response, @Query("redirect") redirect?: string) {
+		const authorizationUrl =
+			await this.authService.getAuthorizationUrl(redirect);
 
 		return res.redirect(authorizationUrl.toString());
 	}
@@ -41,8 +42,12 @@ export class AuthController {
 	) {
 		const endpoint = req.originalUrl;
 
-		const tokens = await this.authService.handleCallback(endpoint, state);
-		const claims = tokens.claims();
+		const { tokens, redirect } = await this.authService.handleCallback(
+			endpoint,
+			state
+		);
+
+		// const claims = tokens.claims();
 
 		res.cookie(ACCESS_TOKEN_COOKIE_NAME, tokens.access_token, {
 			httpOnly: true,
@@ -57,7 +62,7 @@ export class AuthController {
 			sameSite: "lax",
 		});
 
-		return { tokens, claims };
+		return res.redirect(redirect);
 	}
 
 	/**
