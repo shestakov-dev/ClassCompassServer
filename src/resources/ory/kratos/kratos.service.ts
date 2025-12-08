@@ -61,6 +61,17 @@ export class KratosService {
 		return response.data;
 	}
 
+	async extendSession(sessionId: string): Promise<void> {
+		const response = await this.identityApi.extendSession({
+			id: sessionId,
+		});
+
+		// The extension was successful if we get a 200 or 204 response
+		if (response.status !== 200 && response.status !== 204) {
+			throw new Error(`Failed to extend session ${sessionId}`);
+		}
+	}
+
 	async identityExists(identityId: string): Promise<boolean> {
 		try {
 			await this.identityApi.getIdentity({ id: identityId });
@@ -93,15 +104,6 @@ export class KratosService {
 		});
 
 		return response.data.recovery_link;
-	}
-
-	async createLogoutLink(cookie: string, returnTo: string): Promise<string> {
-		const response = await this.frontendApi.createBrowserLogoutFlow({
-			cookie,
-			returnTo,
-		});
-
-		return response.data.logout_url;
 	}
 
 	async verifyIdentityEmail(identityId: string): Promise<void> {

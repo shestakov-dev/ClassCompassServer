@@ -23,51 +23,6 @@ export class UrlService {
 		return url;
 	}
 
-	getLoginUrl(): URL {
-		return this.buildAppUrl("/auth/login");
-	}
-
-	getHydraCallbackUrl(): URL {
-		const redirectPath = this.configService.getOrThrow<string>(
-			"APP_AUTH_CALLBACK_ROUTE"
-		);
-
-		return this.buildAppUrl(redirectPath);
-	}
-
-	getHydraCodeExchangeUrl(endpoint: string): URL {
-		const url = this.buildAppUrl(endpoint);
-
-		return url;
-	}
-
-	getKratosLoginUrl(loginChallenge: string): URL {
-		const baseUrl =
-			this.configService.getOrThrow<string>("KRATOS_PUBLIC_URL");
-
-		const continueRoute = this.configService.getOrThrow<string>(
-			"APP_AUTH_CONTINUE_ROUTE"
-		);
-
-		const continueUrl = this.buildAppUrl(continueRoute);
-
-		continueUrl.searchParams.set("login_challenge", loginChallenge);
-
-		const url = new URL("/self-service/login/browser", baseUrl);
-
-		url.searchParams.set("return_to", continueUrl.toString());
-
-		return url;
-	}
-
-	getLogoutReturnUrl(): URL {
-		return this.buildAppUrl(
-			this.configService.getOrThrow<string>(
-				"APP_AUTH_LOGOUT_RETURN_ROUTE"
-			)
-		);
-	}
-
 	getDefaultRedirectUrl(): URL {
 		const urlString = this.configService.getOrThrow<string>(
 			"APP_DEFAULT_REDIRECT_URL"

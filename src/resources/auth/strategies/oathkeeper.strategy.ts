@@ -4,9 +4,11 @@ import { PassportStrategy } from "@nestjs/passport";
 import { passportJwtSecret } from "jwks-rsa";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
+import { KratosService } from "@resources/ory/kratos/kratos.service";
 import { UsersService } from "@resources/users/users.service";
 
 export const OATHKEEPER_GUEST_SUBJECT = "guest";
+const SESSION_REFRESH_WINDOW_MS = 60 * 60 * 1000;
 
 @Injectable()
 export class OathkeeperStrategy extends PassportStrategy(
@@ -15,7 +17,8 @@ export class OathkeeperStrategy extends PassportStrategy(
 ) {
 	constructor(
 		configService: ConfigService,
-		private readonly usersService: UsersService
+		private readonly usersService: UsersService,
+		private readonly kratosService: KratosService
 	) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -34,7 +37,7 @@ export class OathkeeperStrategy extends PassportStrategy(
 		});
 	}
 
-	validate(payload: any) {
+	async validate(payload: any) {
 		if (!payload.sub) {
 			throw new UnauthorizedException("Invalid token: missing subject");
 		}
@@ -43,6 +46,31 @@ export class OathkeeperStrategy extends PassportStrategy(
 			return {
 				id: OATHKEEPER_GUEST_SUBJECT,
 			};
+		}
+
+		const session = payload.session;
+
+		if (!session || !session.id || !session.expires_at) {
+			// If Oathkeeper didn't hydrate the session, we can't trust the expiration
+			throw new UnauthorizedException(
+				"Invalid token: missing session context"
+			);
+		}
+
+		// Calculate when the session expires and whether we need to extend it
+		const now = Date.now();
+		const expiresAt = new Date(session.expires_at).getTime();
+		const timeRemaining = expiresAt - now;
+
+		if (timeRemaining > 0 && timeRemaining < SESSION_REFRESH_WINDOW_MS) {
+			console.log("extending");
+
+			// We attempt to extend the session but don't block the request if it fails
+			try {
+				await this.kratosService.extendSession(session.id);
+			} catch (error) {
+				console.error(error);
+			}
 		}
 
 		return this.usersService.findOneByIdentityId(payload.sub);

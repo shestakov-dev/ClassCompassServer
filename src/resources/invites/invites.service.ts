@@ -92,7 +92,7 @@ export class InvitesService {
 
 		await this.revokeInviteCode(inviteCode);
 
-		return this.urlService.getLoginUrl().toString();
+		return this.urlService.getDefaultRedirectUrl().toString();
 	}
 
 	private getRedisKey(inviteCode: string): string {
