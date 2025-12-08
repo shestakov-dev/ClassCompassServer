@@ -7,7 +7,7 @@ import { InviteEntity } from "./entities/invite.entity";
 
 import { InvitesService } from "./invites.service";
 
-@Controller("auth/invite")
+@Controller("invites")
 export class InvitesController {
 	constructor(private readonly invitesService: InvitesService) {}
 

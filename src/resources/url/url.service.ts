@@ -12,13 +12,13 @@ export class UrlService {
 	}
 
 	getInviteUrl(inviteCode: string): URL {
-		const url = this.buildAppUrl(`/auth/invite/${inviteCode}`);
+		const url = this.buildAppUrl(`/invites/${inviteCode}`);
 
 		return url;
 	}
 
 	getInviteDoneUrl(inviteCode: string): URL {
-		const url = this.buildAppUrl(`/auth/invite/done/${inviteCode}`);
+		const url = this.buildAppUrl(`/invites/done/${inviteCode}`);
 
 		return url;
 	}

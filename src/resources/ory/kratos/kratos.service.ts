@@ -95,15 +95,29 @@ export class KratosService {
 		identityId: string,
 		returnTo: string
 	): Promise<string> {
-		const response = await this.identityApi.createRecoveryLinkForIdentity({
-			createRecoveryLinkForIdentityBody: {
-				identity_id: identityId,
-				expires_in: "15m",
-			},
-			returnTo,
-		});
+		try {
+			const response =
+				await this.identityApi.createRecoveryLinkForIdentity({
+					createRecoveryLinkForIdentityBody: {
+						identity_id: identityId,
+						expires_in: "15m",
+					},
+					returnTo,
+				});
 
-		return response.data.recovery_link;
+			return response.data.recovery_link;
+		} catch (error: unknown) {
+			if (error instanceof AxiosError) {
+				console.error(
+					"Error creating recovery link:",
+					JSON.stringify(error.response?.data, null, 2)
+				);
+			} else {
+				console.error("An unexpected error occurred:", error);
+			}
+
+			throw error;
+		}
 	}
 
 	async verifyIdentityEmail(identityId: string): Promise<void> {
