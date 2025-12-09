@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Welcome to ClassCompass</title>
+		<style>
+			:root {
+				--primary: #1bae89; /* shamrock-500 */
+				--primary-dark: #0f8c6f; /* shamrock-600 */
+				--bg: #f8f8f8; /* gallery-50 */
+				--text: #262626; /* mine-shaft-950 */
+				--muted: #525252; /* gallery-700 */
+				--card: #ffffff;
+				--border: #e7e7e7; /* mine-shaft-100 */
+			}
+			body {
+				margin: 0;
+				padding: 0;
+				background: var(--bg);
+				font-family:
+					"Roboto",
+					"Segoe UI",
+					system-ui,
+					-apple-system,
+					sans-serif;
+				color: var(--text);
+			}
+			.wrapper {
+				width: 100%;
+				padding: 32px 16px;
+			}
+			.card {
+				max-width: 640px;
+				margin: 0 auto;
+				background: var(--card);
+				border: 1px solid var(--border);
+				border-radius: 16px;
+				box-shadow: 0 14px 34px rgba(38, 38, 38, 0.08);
+				overflow: hidden;
+			}
+			.header {
+				padding: 24px;
+				display: flex;
+				align-items: center;
+				gap: 16px;
+				background: linear-gradient(
+					135deg,
+					rgba(27, 174, 137, 0.1),
+					rgba(27, 174, 137, 0.22)
+				);
+				border-bottom: 1px solid var(--border);
+			}
+			.logo {
+				width: 56px;
+				height: 56px;
+				border-radius: 50%;
+				background: radial-gradient(
+					circle at 30% 30%,
+					#d4f7e8,
+					#1bae89 65%
+				);
+				display: grid;
+				place-items: center;
+				color: #ffffff;
+				font-weight: 800;
+				letter-spacing: 0.5px;
+				font-size: 18px;
+			}
+			.titles {
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+			}
+			.title {
+				margin: 0;
+				font-size: 20px;
+				font-weight: 700;
+			}
+			.subtitle {
+				margin: 0;
+				font-size: 14px;
+				color: var(--muted);
+			}
+			.body {
+				padding: 24px;
+				line-height: 1.6;
+				font-size: 15px;
+			}
+			.cta {
+				margin: 24px 0;
+				text-align: center;
+			}
+			.btn {
+				display: inline-block;
+				padding: 12px 20px;
+				border-radius: 12px;
+				background: var(--primary);
+				color: #ffffff !important;
+				text-decoration: none;
+				font-weight: 700;
+				letter-spacing: 0.3px;
+				box-shadow: 0 10px 25px rgba(12, 112, 92, 0.28);
+				transition:
+					background 0.15s ease,
+					transform 0.15s ease;
+			}
+			.btn:hover {
+				background: var(--primary-dark);
+				transform: translateY(-1px);
+			}
+			.footnote {
+				font-size: 13px;
+				color: var(--muted);
+				margin-top: 16px;
+				text-align: center;
+			}
+			.link {
+				color: var(--primary);
+				word-break: break-all;
+			}
+			@media (max-width: 520px) {
+				.header {
+					flex-direction: column;
+					align-items: flex-start;
+				}
+				.logo {
+					margin-bottom: 8px;
+				}
+				.title {
+					font-size: 18px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="wrapper">
+			<div class="card">
+				<div class="header">
+					<div class="logo">CC</div>
+					<div class="titles">
+						<h1 class="title">Welcome to ClassCompass</h1>
+						<p class="subtitle">
+							Let's get you set up in under a minute.
+						</p>
+					</div>
+				</div>
+				<div class="body">
+					<p>Welcome aboard {{firstName}} {{lastName}},</p>
+					<p>
+						We're excited to have you join us! Click the button
+						below to finish creating your account and start using
+						ClassCompass.
+					</p>
+					<div class="cta">
+						<a
+							class="btn"
+							href="{{inviteUrl}}"
+							target="_blank"
+							rel="noopener noreferrer">
+							Complete your registration
+						</a>
+					</div>
+					<p class="footnote">
+						If the button doesn't work, copy and paste this link
+						into your browser:<br />
+						<a class="link" href="{{inviteUrl}}"
+							>{{inviteUrl}}</a
+						>
+					</p>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+

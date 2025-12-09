@@ -11,6 +11,12 @@
 					"introspectComments": true
 				}
 			}
+		],
+		"assets": [
+			{
+				"include": "resources/email/templates/**/*",
+				"watchAssets": true
+			}
 		]
 	}
 }

@@ -91,6 +91,18 @@ export class KratosService {
 		}
 	}
 
+	async getIdentityByEmail(email: string) {
+		const response = await this.identityApi.listIdentities({
+			credentialsIdentifier: email,
+		});
+
+		if (response.data.length === 0) {
+			throw new NotFoundException("Identity not found");
+		}
+
+		return response.data[0];
+	}
+
 	async createRecoveryLink(
 		identityId: string,
 		returnTo: string

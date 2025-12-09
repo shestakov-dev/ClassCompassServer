@@ -22,6 +22,7 @@
 	},
 	"dependencies": {
 		"@nestjs-modules/ioredis": "^2.0.2",
+		"@nestjs-modules/mailer": "^2.0.2",
 		"@nestjs/common": "^10.4.20",
 		"@nestjs/config": "^4.0.2",
 		"@nestjs/core": "^10.4.20",
@@ -40,8 +41,10 @@
 		"cookie-parser": "^1.4.7",
 		"date-fns": "^4.1.0",
 		"express": "^4.22.0",
+		"handlebars": "^4.7.8",
 		"ioredis": "^5.8.2",
 		"jwks-rsa": "^3.2.0",
+		"nodemailer": "^7.0.11",
 		"passport": "^0.7.0",
 		"passport-jwt": "^4.0.1",
 		"reflect-metadata": "^0.2.2",
@@ -60,6 +63,7 @@
 		"@types/express": "^5.0.5",
 		"@types/jest": "^29.5.14",
 		"@types/node": "^22.19.1",
+		"@types/nodemailer": "^7.0.4",
 		"@types/passport-jwt": "^4.0.1",
 		"@types/supertest": "^6.0.3",
 		"@typescript-eslint/eslint-plugin": "^8.48.0",
@@ -96,5 +100,5 @@
 			"unrs-resolver"
 		]
 	},
-	"packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
+	"packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501"
 }

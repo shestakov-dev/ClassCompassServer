@@ -8,13 +8,12 @@ import {
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import { Redis } from "ioredis";
 
+import { EmailService } from "@resources/email/email.service";
 import { KratosService } from "@resources/ory/kratos/kratos.service";
 import { UrlService } from "@resources/url/url.service";
 import { UsersService } from "@resources/users/users.service";
 
 import { CreateInviteDto } from "./dto/create-invite.dto";
-
-import { InviteEntity } from "./entities/invite.entity";
 
 @Injectable()
 export class InvitesService {
@@ -22,16 +21,18 @@ export class InvitesService {
 		@InjectRedis() private readonly redis: Redis,
 		private readonly usersService: UsersService,
 		private readonly kratosService: KratosService,
-		private readonly urlService: UrlService
+		private readonly urlService: UrlService,
+		private readonly emailService: EmailService
 	) {}
 
-	async createInvite(
-		createInviteDto: CreateInviteDto
-	): Promise<InviteEntity> {
-		const { userId, ttlSeconds } = createInviteDto;
-
-		const { identityId } = await this.usersService.findOne(userId);
-
+	// Separate method to create invite by identity ID for the bootstrap process
+	async createInviteWithIdentityId(
+		email: string,
+		firstName: string,
+		lastName: string,
+		identityId: string,
+		ttlSeconds?: number
+	): Promise<void> {
 		const identityExists =
 			await this.kratosService.identityExists(identityId);
 
@@ -44,10 +45,40 @@ export class InvitesService {
 			ttlSeconds
 		);
 
-		return {
-			inviteCode,
-			inviteUrl: this.urlService.getInviteUrl(inviteCode).toString(),
-		};
+		const inviteUrl = this.urlService.getInviteUrl(inviteCode).toString();
+
+		await this.emailService.sendEmail({
+			email,
+			subject: "Welcome! You're invited to join our platform",
+			template: "onboarding",
+			context: {
+				inviteUrl,
+				firstName,
+				lastName,
+			},
+		});
+	}
+
+	async createInvite(createInviteDto: CreateInviteDto): Promise<void> {
+		const { userId, ttlSeconds } = createInviteDto;
+
+		const { identityId, firstName, lastName, email } =
+			await this.usersService.findOne(userId);
+
+		const identityExists =
+			await this.kratosService.identityExists(identityId);
+
+		if (!identityExists) {
+			throw new NotFoundException("Identity not found");
+		}
+
+		await this.createInviteWithIdentityId(
+			email,
+			firstName,
+			lastName,
+			identityId,
+			ttlSeconds
+		);
 	}
 
 	async useInvite(inviteCode: string): Promise<string> {

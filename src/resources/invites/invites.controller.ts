@@ -3,8 +3,6 @@ import { Response } from "express";
 
 import { CreateInviteDto } from "./dto/create-invite.dto";
 
-import { InviteEntity } from "./entities/invite.entity";
-
 import { InvitesService } from "./invites.service";
 
 @Controller("invites")
@@ -14,8 +12,8 @@ export class InvitesController {
 	@Post()
 	async createInvite(
 		@Body() createInviteDto: CreateInviteDto
-	): Promise<InviteEntity> {
-		return this.invitesService.createInvite(createInviteDto);
+	): Promise<void> {
+		await this.invitesService.createInvite(createInviteDto);
 	}
 
 	@Get(":inviteCode")
