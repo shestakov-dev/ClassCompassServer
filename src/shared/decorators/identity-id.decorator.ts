@@ -2,16 +2,16 @@ import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 import { OATHKEEPER_GUEST_SUBJECT } from "@resources/auth/strategies/oathkeeper.strategy";
 
-import { RequestWithIdentityId } from "@shared/types/request-with-identity-id";
+import { RequestWithUser } from "@shared/types/request-with-user";
 
 function getCurrentIdentityIdByContext(context: ExecutionContext) {
-	const request = context.switchToHttp().getRequest<RequestWithIdentityId>();
+	const request = context.switchToHttp().getRequest<RequestWithUser>();
 
-	if (request.identityId === OATHKEEPER_GUEST_SUBJECT) {
+	if (request.user?.identityId === OATHKEEPER_GUEST_SUBJECT) {
 		return null;
 	}
 
-	return request.identityId;
+	return request.user?.identityId;
 }
 
 export const IdentityId = createParamDecorator((_, context: ExecutionContext) =>

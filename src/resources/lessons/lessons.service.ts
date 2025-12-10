@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { DailySchedulesService } from "@resources/daily-schedules/daily-schedules.service";
+import { KetoService } from "@resources/ory/keto/keto.service";
 import { RoomsService } from "@resources/rooms/rooms.service";
 import { SubjectsService } from "@resources/subjects/subjects.service";
 import { TeachersService } from "@resources/teachers/teachers.service";
@@ -17,7 +18,8 @@ export class LessonsService {
 		private readonly roomsService: RoomsService,
 		private readonly teachersService: TeachersService,
 		private readonly subjectsService: SubjectsService,
-		private readonly dailySchedulesService: DailySchedulesService
+		private readonly dailySchedulesService: DailySchedulesService,
+		private readonly ketoService: KetoService
 	) {}
 
 	async create(createLessonDto: CreateLessonDto) {
@@ -30,9 +32,17 @@ export class LessonsService {
 
 		// TODO: Check for conflicts (e.g., same teacher or room at the same time)
 
-		return this.prisma.client.lesson.create({
+		const newLesson = await this.prisma.client.lesson.create({
 			data: createLessonDto,
 		});
+
+		// Add parent daily schedule relationship
+		await this.addParentDailySchedule(
+			newLesson.id,
+			newLesson.dailyScheduleId
+		);
+
+		return newLesson;
 	}
 
 	async findAllByDailySchedule(dailyScheduleId: string) {
@@ -79,6 +89,36 @@ export class LessonsService {
 	remove(id: string) {
 		return this.prisma.client.lesson.softDelete({
 			where: { id },
+		});
+	}
+
+	private async addParentDailySchedule(
+		lessonId: string,
+		dailyScheduleId: string
+	) {
+		await this.ketoService.createRelationship({
+			namespace: "Lesson",
+			object: lessonId,
+			relation: "parentDailySchedule",
+			subjectSet: {
+				namespace: "DailySchedule",
+				object: dailyScheduleId,
+			},
+		});
+	}
+
+	private async removeParentDailySchedule(
+		lessonId: string,
+		dailyScheduleId: string
+	) {
+		await this.ketoService.deleteRelationship({
+			namespace: "Lesson",
+			object: lessonId,
+			relation: "parentDailySchedule",
+			subjectSet: {
+				namespace: "DailySchedule",
+				object: dailyScheduleId,
+			},
 		});
 	}
 }

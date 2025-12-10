@@ -48,12 +48,6 @@ export class UsersService {
 		});
 	}
 
-	findOneByIdentityId(identityId: string) {
-		return this.prisma.client.user.findUniqueOrThrow({
-			where: { identityId },
-		});
-	}
-
 	async update(id: string, updateUserDto: UpdateUserDto) {
 		if (updateUserDto.schoolId) {
 			await this.schoolsService.ensureExists(updateUserDto.schoolId);

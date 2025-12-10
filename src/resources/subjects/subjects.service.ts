@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
+import { KetoService } from "@resources/ory/keto/keto.service";
 import { SchoolsService } from "@resources/schools/schools.service";
 import { TeachersService } from "@resources/teachers/teachers.service";
 
@@ -14,7 +15,8 @@ export class SubjectsService {
 		private readonly prisma: PrismaService,
 		private readonly schoolsService: SchoolsService,
 		@Inject(forwardRef(() => TeachersService))
-		private readonly teachersService: TeachersService
+		private readonly teachersService: TeachersService,
+		private readonly ketoService: KetoService
 	) {}
 
 	async create(createSubjectDto: CreateSubjectDto) {
@@ -39,6 +41,9 @@ export class SubjectsService {
 				teachers: { select: { id: true }, where: { deleted: false } },
 			},
 		});
+
+		// Add parent school relationship
+		await this.addParentSchool(subject.id, createSubjectDto.schoolId);
 
 		return {
 			...subject,
@@ -127,5 +132,29 @@ export class SubjectsService {
 
 	async ensureExistsMany(ids: string[]) {
 		await this.prisma.client.subject.ensureExistsMany(ids);
+	}
+
+	private async addParentSchool(subjectId: string, schoolId: string) {
+		await this.ketoService.createRelationship({
+			namespace: "Subject",
+			object: subjectId,
+			relation: "parentSchool",
+			subjectSet: {
+				namespace: "School",
+				object: schoolId,
+			},
+		});
+	}
+
+	private async removeParentSchool(subjectId: string, schoolId: string) {
+		await this.ketoService.deleteRelationship({
+			namespace: "Subject",
+			object: subjectId,
+			relation: "parentSchool",
+			subjectSet: {
+				namespace: "School",
+				object: schoolId,
+			},
+		});
 	}
 }

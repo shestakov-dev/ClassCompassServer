@@ -73,6 +73,8 @@ export class OathkeeperStrategy extends PassportStrategy(
 			}
 		}
 
-		return payload.sub;
+		return {
+			identityId: payload.sub,
+		};
 	}
 }

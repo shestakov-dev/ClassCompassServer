@@ -91,42 +91,6 @@ export class KetoService {
 		}
 	}
 
-	async createObjectLink(
-		namespace: string,
-		object: string,
-		relation: string,
-		parentNamespace: string,
-		parentObject: string
-	) {
-		return this.createRelationship({
-			namespace,
-			object,
-			relation,
-			subjectSet: {
-				namespace: parentNamespace,
-				object: parentObject,
-			},
-		});
-	}
-
-	async deleteObjectLink(
-		namespace: string,
-		object: string,
-		relation: string,
-		parentNamespace: string,
-		parentObject: string
-	) {
-		return this.deleteRelationship({
-			namespace,
-			object,
-			relation,
-			subjectSet: {
-				namespace: parentNamespace,
-				object: parentObject,
-			},
-		});
-	}
-
 	private mapTupleToRelationship(tuple: KetoTuple): Relationship {
 		const relationship: Relationship = {
 			namespace: tuple.namespace,

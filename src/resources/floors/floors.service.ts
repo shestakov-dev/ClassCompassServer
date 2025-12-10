@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { BuildingsService } from "@resources/buildings/buildings.service";
+import { KetoService } from "@resources/ory/keto/keto.service";
 
 import { PrismaService } from "@prisma/prisma.service";
 
@@ -11,15 +12,21 @@ import { UpdateFloorDto } from "./dto/update-floor.dto";
 export class FloorsService {
 	constructor(
 		private readonly prisma: PrismaService,
-		private readonly buildingsService: BuildingsService
+		private readonly buildingsService: BuildingsService,
+		private readonly ketoService: KetoService
 	) {}
 
 	async create(createFloorDto: CreateFloorDto) {
 		await this.buildingsService.ensureExists(createFloorDto.buildingId);
 
-		return this.prisma.client.floor.create({
+		const newFloor = await this.prisma.client.floor.create({
 			data: createFloorDto,
 		});
+
+		// Add parent building relationship
+		await this.addParentBuilding(newFloor.id, newFloor.buildingId);
+
+		return newFloor;
 	}
 
 	async findAllByBuilding(buildingId: string) {
@@ -55,5 +62,29 @@ export class FloorsService {
 
 	async ensureExists(id: string) {
 		await this.prisma.client.floor.ensureExists(id);
+	}
+
+	private async addParentBuilding(floorId: string, buildingId: string) {
+		await this.ketoService.createRelationship({
+			namespace: "Floor",
+			object: floorId,
+			relation: "parentBuilding",
+			subjectSet: {
+				namespace: "Building",
+				object: buildingId,
+			},
+		});
+	}
+
+	private async removeParentBuilding(floorId: string, buildingId: string) {
+		await this.ketoService.deleteRelationship({
+			namespace: "Floor",
+			object: floorId,
+			relation: "parentBuilding",
+			subjectSet: {
+				namespace: "Building",
+				object: buildingId,
+			},
+		});
 	}
 }
