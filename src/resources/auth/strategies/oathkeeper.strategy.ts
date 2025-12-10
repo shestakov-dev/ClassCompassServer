@@ -5,7 +5,6 @@ import { passportJwtSecret } from "jwks-rsa";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
 import { KratosService } from "@resources/ory/kratos/kratos.service";
-import { UsersService } from "@resources/users/users.service";
 
 export const OATHKEEPER_GUEST_SUBJECT = "guest";
 const SESSION_REFRESH_WINDOW_MS = 60 * 60 * 1000;
@@ -17,7 +16,6 @@ export class OathkeeperStrategy extends PassportStrategy(
 ) {
 	constructor(
 		configService: ConfigService,
-		private readonly usersService: UsersService,
 		private readonly kratosService: KratosService
 	) {
 		super({
@@ -38,6 +36,8 @@ export class OathkeeperStrategy extends PassportStrategy(
 	}
 
 	async validate(payload: any) {
+		console.log(payload);
+
 		if (!payload.sub) {
 			throw new UnauthorizedException("Invalid token: missing subject");
 		}
@@ -73,6 +73,6 @@ export class OathkeeperStrategy extends PassportStrategy(
 			}
 		}
 
-		return this.usersService.findOneByIdentityId(payload.sub);
+		return payload.sub;
 	}
 }
