@@ -6,6 +6,7 @@ interface SendEmailParams {
 	subject: string;
 	template: string;
 	context: ISendMailOptions["context"];
+	attachments?: ISendMailOptions["attachments"];
 }
 
 @Injectable()
@@ -19,6 +20,7 @@ export class EmailService {
 				subject: params.subject,
 				template: params.template,
 				context: params.context,
+				attachments: params.attachments,
 			});
 		} catch (error) {
 			console.error(

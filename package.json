@@ -30,6 +30,7 @@
 		"@nestjs/passport": "^11.0.5",
 		"@nestjs/platform-express": "^10.4.20",
 		"@nestjs/schedule": "^5.0.1",
+		"@nestjs/serve-static": "^5.0.4",
 		"@nestjs/swagger": "^8.1.1",
 		"@ory/keto-client": "^25.4.0",
 		"@ory/kratos-client": "^25.4.0",

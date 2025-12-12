@@ -47,6 +47,7 @@ async function bootstrap() {
 			docExpansion: "none", // collapse operations by default
 			tagsSorter: "alpha", // sort tags alphabetically
 		},
+		customfavIcon: "/assets/favicon/favicon.ico",
 	});
 
 	app.useGlobalFilters(new PrismaClientExceptionFilter());

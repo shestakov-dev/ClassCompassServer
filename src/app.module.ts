@@ -1,7 +1,10 @@
+import { join } from "path";
+
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ScheduleModule } from "@nestjs/schedule";
+import { ServeStaticModule } from "@nestjs/serve-static";
 import { RedisModule } from "@nestjs-modules/ioredis";
 
 import { AuthModule } from "@resources/auth/auth.module";
@@ -34,6 +37,11 @@ import { BootstrapService } from "./bootstrap.service";
 	],
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
+		ScheduleModule.forRoot(),
+		ServeStaticModule.forRoot({
+			rootPath: join(__dirname, "..", "assets"),
+			serveRoot: "/assets",
+		}),
 		RedisModule.forRootAsync({
 			imports: [ConfigModule],
 			useFactory: (configService: ConfigService) => ({
@@ -49,7 +57,6 @@ import { BootstrapService } from "./bootstrap.service";
 			}),
 			inject: [ConfigService],
 		}),
-		ScheduleModule.forRoot(),
 		SchoolsModule,
 		TeachersModule,
 		ClassesModule,

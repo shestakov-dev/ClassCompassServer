@@ -1,4 +1,5 @@
 import { randomBytes } from "crypto";
+import { join } from "path";
 
 import {
 	Injectable,
@@ -17,6 +18,16 @@ import { CreateInviteDto } from "./dto/create-invite.dto";
 
 @Injectable()
 export class InvitesService {
+	private readonly LOGO_URL = join(
+		__dirname,
+		"..",
+		"..",
+		"..",
+		"assets",
+		"images",
+		"ClassCompassLogo.png"
+	);
+
 	constructor(
 		@InjectRedis() private readonly redis: Redis,
 		private readonly usersService: UsersService,
@@ -56,6 +67,13 @@ export class InvitesService {
 				firstName,
 				lastName,
 			},
+			attachments: [
+				{
+					filename: "logo.png",
+					cid: "logo",
+					path: this.LOGO_URL,
+				},
+			],
 		});
 	}
 
