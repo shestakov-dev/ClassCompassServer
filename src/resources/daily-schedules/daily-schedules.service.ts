@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { ClassesService } from "@resources/classes/classes.service";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
 
 import { PrismaService } from "@prisma/prisma.service";
@@ -59,10 +60,19 @@ export class DailySchedulesService {
 		});
 	}
 
-	remove(id: string) {
-		return this.prisma.client.dailySchedule.softDelete({
-			where: { id },
-		});
+	async remove(id: string) {
+		const removedDailySchedule =
+			await this.prisma.client.dailySchedule.softDelete({
+				where: { id },
+			});
+
+		// Remove parent class relationship
+		await this.removeParentClass(
+			removedDailySchedule.id,
+			removedDailySchedule.classId
+		);
+
+		return removedDailySchedule;
 	}
 
 	async ensureExists(id: string) {
@@ -71,11 +81,11 @@ export class DailySchedulesService {
 
 	private async addParentClass(dailyScheduleId: string, classId: string) {
 		await this.ketoService.createRelationship({
-			namespace: "DailySchedule",
+			namespace: KetoNamespace.DailySchedule,
 			object: dailyScheduleId,
 			relation: "parentClass",
 			subjectSet: {
-				namespace: "Class",
+				namespace: KetoNamespace.Class,
 				object: classId,
 			},
 		});
@@ -83,11 +93,11 @@ export class DailySchedulesService {
 
 	private async removeParentClass(dailyScheduleId: string, classId: string) {
 		await this.ketoService.deleteRelationship({
-			namespace: "DailySchedule",
+			namespace: KetoNamespace.DailySchedule,
 			object: dailyScheduleId,
 			relation: "parentClass",
 			subjectSet: {
-				namespace: "Class",
+				namespace: KetoNamespace.Class,
 				object: classId,
 			},
 		});

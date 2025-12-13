@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
+import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
 import { SchoolsService } from "@resources/schools/schools.service";
 import { TeachersService } from "@resources/teachers/teachers.service";
@@ -120,10 +121,15 @@ export class SubjectsService {
 		};
 	}
 
-	remove(id: string) {
-		return this.prisma.client.subject.softDelete({
+	async remove(id: string) {
+		const newSubject = await this.prisma.client.subject.softDelete({
 			where: { id },
 		});
+
+		// Remove parent school relationship
+		await this.removeParentSchool(newSubject.id, newSubject.schoolId);
+
+		return newSubject;
 	}
 
 	async ensureExists(id: string) {
@@ -136,11 +142,11 @@ export class SubjectsService {
 
 	private async addParentSchool(subjectId: string, schoolId: string) {
 		await this.ketoService.createRelationship({
-			namespace: "Subject",
+			namespace: KetoNamespace.Subject,
 			object: subjectId,
 			relation: "parentSchool",
 			subjectSet: {
-				namespace: "School",
+				namespace: KetoNamespace.School,
 				object: schoolId,
 			},
 		});
@@ -148,11 +154,11 @@ export class SubjectsService {
 
 	private async removeParentSchool(subjectId: string, schoolId: string) {
 		await this.ketoService.deleteRelationship({
-			namespace: "Subject",
+			namespace: KetoNamespace.Subject,
 			object: subjectId,
 			relation: "parentSchool",
 			subjectSet: {
-				namespace: "School",
+				namespace: KetoNamespace.School,
 				object: schoolId,
 			},
 		});

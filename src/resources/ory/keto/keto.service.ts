@@ -8,17 +8,13 @@ import {
 } from "@ory/keto-client";
 import { AxiosError } from "axios";
 
-export interface KetoTuple {
-	namespace: string;
-	object: string;
-	relation: string;
-	subjectId?: string;
-	subjectSet?: {
-		namespace: string;
-		object: string;
-		relation?: string;
-	};
-}
+import {
+	KetoCheckTuple,
+	KetoChildNamespace,
+	KetoHierarchy,
+	KetoNamespace,
+	KetoWriteTuple,
+} from "./definitions";
 
 @Injectable()
 export class KetoService {
@@ -41,7 +37,9 @@ export class KetoService {
 		);
 	}
 
-	async createRelationship(tuple: KetoTuple): Promise<void> {
+	async createRelationship<N extends KetoNamespace>(
+		tuple: KetoWriteTuple<N>
+	): Promise<void> {
 		try {
 			const relationship = this.mapTupleToRelationship(tuple);
 
@@ -53,35 +51,64 @@ export class KetoService {
 		}
 	}
 
-	async deleteRelationship(tuple: KetoTuple): Promise<void> {
+	async deleteRelationship<N extends KetoNamespace>(
+		tuple: KetoWriteTuple<N>
+	): Promise<void> {
 		try {
-			await this.relationApi.deleteRelationships({
-				namespace: tuple.namespace,
-				object: tuple.object,
-				relation: tuple.relation,
-				subjectId: tuple.subjectId,
-				subjectSetNamespace: tuple.subjectSet?.namespace,
-				subjectSetObject: tuple.subjectSet?.object,
-				subjectSetRelation: tuple.subjectSet?.relation,
-			});
+			const relationship = this.mapTupleToRelationship(tuple);
+
+			await this.relationApi.deleteRelationships(relationship);
 		} catch (error) {
 			this.handleKetoError(error, "delete");
 		}
 	}
 
-	async checkPermission(
-		namespace: string,
-		object: string,
-		relation: string,
-		subjectId?: string
+	async linkChild(
+		childNamespace: KetoChildNamespace,
+		childId: string,
+		parentId: string
+	): Promise<void> {
+		const hierarchy = KetoHierarchy[childNamespace];
+
+		const tuple: KetoWriteTuple<typeof childNamespace> = {
+			namespace: childNamespace,
+			object: childId,
+			relation: hierarchy.parentRelation,
+			subjectSet: {
+				namespace: hierarchy.parentNamespace,
+				object: parentId,
+			},
+		};
+
+		await this.createRelationship(tuple);
+	}
+
+	async unlinkChild(
+		childNamespace: KetoChildNamespace,
+		childId: string,
+		parentId: string
+	): Promise<void> {
+		const hierarchy = KetoHierarchy[childNamespace];
+
+		const tuple: KetoWriteTuple<typeof childNamespace> = {
+			namespace: childNamespace,
+			object: childId,
+			relation: hierarchy.parentRelation,
+			subjectSet: {
+				namespace: hierarchy.parentNamespace,
+				object: parentId,
+			},
+		};
+
+		await this.deleteRelationship(tuple);
+	}
+
+	async checkPermission<N extends KetoNamespace>(
+		tuple: KetoCheckTuple<N>
 	): Promise<boolean> {
 		try {
-			const response = await this.permissionApi.checkPermission({
-				namespace,
-				object,
-				relation,
-				subjectId,
-			});
+			const response = await this.permissionApi.checkPermission(tuple);
+
 			return response.data.allowed;
 		} catch (error) {
 			this.handleKetoError(error, "check permission");
@@ -91,23 +118,27 @@ export class KetoService {
 		}
 	}
 
-	private mapTupleToRelationship(tuple: KetoTuple): Relationship {
+	private mapTupleToRelationship<N extends KetoNamespace>(
+		tuple: KetoWriteTuple<N>
+	): Relationship {
 		const relationship: Relationship = {
 			namespace: tuple.namespace,
 			object: tuple.object,
 			relation: tuple.relation,
 		};
 
-		if (tuple.subjectId) {
+		if ("subjectId" in tuple) {
 			relationship.subject_id = tuple.subjectId;
-		} else if (tuple.subjectSet) {
+		} else if ("subjectSet" in tuple) {
 			relationship.subject_set = {
-				namespace: tuple.subjectSet.namespace,
-				object: tuple.subjectSet.object,
-				relation: tuple.subjectSet.relation ?? "",
+				// If there is no relation in the subject set, default to empty string
+				relation: "",
+				...tuple.subjectSet,
 			};
 		} else {
-			throw new Error("Either subjectId or subjectSet must be provided");
+			throw new InternalServerErrorException(
+				"Invalid Keto Tuple: Missing subject"
+			);
 		}
 
 		return relationship;

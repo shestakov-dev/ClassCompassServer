@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { DailySchedulesService } from "@resources/daily-schedules/daily-schedules.service";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
 import { RoomsService } from "@resources/rooms/rooms.service";
 import { SubjectsService } from "@resources/subjects/subjects.service";
@@ -86,10 +87,18 @@ export class LessonsService {
 		});
 	}
 
-	remove(id: string) {
-		return this.prisma.client.lesson.softDelete({
+	async remove(id: string) {
+		const removedLesson = await this.prisma.client.lesson.softDelete({
 			where: { id },
 		});
+
+		// Remove parent daily schedule relationship
+		await this.removeParentDailySchedule(
+			removedLesson.id,
+			removedLesson.dailyScheduleId
+		);
+
+		return removedLesson;
 	}
 
 	private async addParentDailySchedule(
@@ -97,11 +106,11 @@ export class LessonsService {
 		dailyScheduleId: string
 	) {
 		await this.ketoService.createRelationship({
-			namespace: "Lesson",
+			namespace: KetoNamespace.Lesson,
 			object: lessonId,
 			relation: "parentDailySchedule",
 			subjectSet: {
-				namespace: "DailySchedule",
+				namespace: KetoNamespace.DailySchedule,
 				object: dailyScheduleId,
 			},
 		});
@@ -112,11 +121,11 @@ export class LessonsService {
 		dailyScheduleId: string
 	) {
 		await this.ketoService.deleteRelationship({
-			namespace: "Lesson",
+			namespace: KetoNamespace.Lesson,
 			object: lessonId,
 			relation: "parentDailySchedule",
 			subjectSet: {
-				namespace: "DailySchedule",
+				namespace: KetoNamespace.DailySchedule,
 				object: dailyScheduleId,
 			},
 		});

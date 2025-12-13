@@ -6,6 +6,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 
 import { InvitesService } from "@resources/invites/invites.service";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
 import { KratosService } from "@resources/ory/kratos/kratos.service";
 
@@ -23,6 +24,9 @@ export class BootstrapService implements OnApplicationBootstrap {
 	}
 
 	private async ensurePlatformAdmin() {
+		const platformObjectId =
+			this.configService.getOrThrow<string>("PLATFORM_OBJECT_ID");
+
 		const adminEmail = this.configService.getOrThrow<string>(
 			"PLATFORM_ADMIN_EMAIL"
 		);
@@ -53,9 +57,9 @@ export class BootstrapService implements OnApplicationBootstrap {
 
 		// Give the platform admin privileges in Keto
 		await this.ketoService.createRelationship({
-			namespace: "Platform",
+			namespace: KetoNamespace.Platform,
 			relation: "admins",
-			object: "ClassCompass",
+			object: platformObjectId,
 			subjectId: newIdentity.id,
 		});
 
@@ -67,7 +71,7 @@ export class BootstrapService implements OnApplicationBootstrap {
 			newIdentity.id
 		);
 
-		console.warn(
+		console.log(
 			`Platform admin ${adminEmail} created. An invite has been sent to set up credentials.`
 		);
 	}

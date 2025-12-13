@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { FloorsService } from "@resources/floors/floors.service";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
 
 import { PrismaService } from "@prisma/prisma.service";
@@ -54,10 +55,15 @@ export class RoomsService {
 		});
 	}
 
-	remove(id: string) {
-		return this.prisma.client.room.softDelete({
+	async remove(id: string) {
+		const removedRoom = await this.prisma.client.room.softDelete({
 			where: { id },
 		});
+
+		// Remove parent floor relationship
+		await this.removeParentFloor(removedRoom.id, removedRoom.floorId);
+
+		return removedRoom;
 	}
 
 	async ensureExists(id: string) {
@@ -66,11 +72,11 @@ export class RoomsService {
 
 	private async addParentFloor(roomId: string, floorId: string) {
 		await this.ketoService.createRelationship({
-			namespace: "Room",
+			namespace: KetoNamespace.Room,
 			object: roomId,
 			relation: "parentFloor",
 			subjectSet: {
-				namespace: "Floor",
+				namespace: KetoNamespace.Floor,
 				object: floorId,
 			},
 		});
@@ -78,11 +84,11 @@ export class RoomsService {
 
 	private async removeParentFloor(roomId: string, floorId: string) {
 		await this.ketoService.deleteRelationship({
-			namespace: "Room",
+			namespace: KetoNamespace.Room,
 			object: roomId,
 			relation: "parentFloor",
 			subjectSet: {
-				namespace: "Floor",
+				namespace: KetoNamespace.Floor,
 				object: floorId,
 			},
 		});

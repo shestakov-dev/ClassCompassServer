@@ -10,8 +10,6 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { IdentityId } from "@shared/decorators/identity-id.decorator";
-
 import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
 
 import { CreateSchoolDto } from "./dto/create-school.dto";
@@ -34,12 +32,9 @@ export class SchoolsController {
 		errorResponses: [HttpStatus.BAD_REQUEST, HttpStatus.CONFLICT],
 	})
 	@Auth("Access token", { OR: ["school:create", "school:*"] })
-	async create(
-		@Body() createSchoolDto: CreateSchoolDto,
-		@IdentityId() identityId: string
-	) {
+	async create(@Body() createSchoolDto: CreateSchoolDto) {
 		return SchoolEntity.fromPlain(
-			await this.schoolsService.create(createSchoolDto, identityId)
+			await this.schoolsService.create(createSchoolDto)
 		);
 	}
 
