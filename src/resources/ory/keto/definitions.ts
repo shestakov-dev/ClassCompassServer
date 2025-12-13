@@ -1,13 +1,14 @@
 // --- Namespace Definitions ---
 
 export enum KetoNamespace {
-	User = "User",
+	Identity = "Identity",
 	Platform = "Platform",
 
 	School = "School",
 
 	Building = "Building",
 	Subject = "Subject",
+	User = "User",
 	Class = "Class",
 
 	Floor = "Floor",
@@ -19,13 +20,14 @@ export enum KetoNamespace {
 
 // Used when creating and deleting relationships
 type KetoNamespaceRelations = {
-	[KetoNamespace.User]: never;
+	[KetoNamespace.Identity]: never;
 	[KetoNamespace.Platform]: "admins";
 
 	[KetoNamespace.School]: "admins" | "members" | "parentPlatform";
 
 	[KetoNamespace.Building]: "parentSchool";
 	[KetoNamespace.Subject]: "parentSchool";
+	[KetoNamespace.User]: "parentSchool";
 	[KetoNamespace.Class]: "parentSchool";
 
 	[KetoNamespace.Floor]: "parentBuilding";
@@ -37,13 +39,14 @@ type KetoNamespaceRelations = {
 
 // Used when checking permissions
 type KetoNamespacePermissions = {
-	[KetoNamespace.User]: never;
+	[KetoNamespace.Identity]: never;
 	[KetoNamespace.Platform]: "manage";
 
 	[KetoNamespace.School]: "manage" | "view";
 
 	[KetoNamespace.Building]: "manage" | "view";
 	[KetoNamespace.Subject]: "manage" | "view";
+	[KetoNamespace.User]: "manage" | "view";
 	[KetoNamespace.Class]: "manage" | "view";
 
 	[KetoNamespace.Floor]: "manage" | "view";
@@ -54,7 +57,7 @@ type KetoNamespacePermissions = {
 };
 
 // When doing checks we might want to check for either a relation or a permission
-type NamespaceCheckable<Namespace extends KetoNamespace> =
+export type NamespaceCheckable<Namespace extends KetoNamespace> =
 	| KetoNamespaceRelations[Namespace]
 	| KetoNamespacePermissions[Namespace];
 
@@ -63,7 +66,7 @@ type NamespaceCheckable<Namespace extends KetoNamespace> =
 // All namespaces that have a parent namespace
 export type KetoChildNamespace = Exclude<
 	KetoNamespace,
-	KetoNamespace.User | KetoNamespace.Platform
+	KetoNamespace.Identity | KetoNamespace.Platform
 >;
 
 interface HierarchyConfig<ChildNamespace extends KetoChildNamespace> {
@@ -85,6 +88,10 @@ export const KetoHierarchy: {
 		parentRelation: "parentSchool",
 	},
 	[KetoNamespace.Subject]: {
+		parentNamespace: KetoNamespace.School,
+		parentRelation: "parentSchool",
+	},
+	[KetoNamespace.User]: {
 		parentNamespace: KetoNamespace.School,
 		parentRelation: "parentSchool",
 	},

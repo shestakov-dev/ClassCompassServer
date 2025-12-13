@@ -71,26 +71,10 @@ export class RoomsService {
 	}
 
 	private async addParentFloor(roomId: string, floorId: string) {
-		await this.ketoService.createRelationship({
-			namespace: KetoNamespace.Room,
-			object: roomId,
-			relation: "parentFloor",
-			subjectSet: {
-				namespace: KetoNamespace.Floor,
-				object: floorId,
-			},
-		});
+		await this.ketoService.linkChild(KetoNamespace.Room, roomId, floorId);
 	}
 
 	private async removeParentFloor(roomId: string, floorId: string) {
-		await this.ketoService.deleteRelationship({
-			namespace: KetoNamespace.Room,
-			object: roomId,
-			relation: "parentFloor",
-			subjectSet: {
-				namespace: KetoNamespace.Floor,
-				object: floorId,
-			},
-		});
+		await this.ketoService.unlinkChild(KetoNamespace.Room, roomId, floorId);
 	}
 }

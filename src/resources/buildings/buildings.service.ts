@@ -74,26 +74,18 @@ export class BuildingsService {
 	}
 
 	private async addParentSchool(buildingId: string, schoolId: string) {
-		await this.ketoService.createRelationship({
-			namespace: KetoNamespace.Building,
-			object: buildingId,
-			relation: "parentSchool",
-			subjectSet: {
-				namespace: KetoNamespace.School,
-				object: schoolId,
-			},
-		});
+		await this.ketoService.linkChild(
+			KetoNamespace.Building,
+			buildingId,
+			schoolId
+		);
 	}
 
 	private async removeParentSchool(buildingId: string, schoolId: string) {
-		await this.ketoService.deleteRelationship({
-			namespace: KetoNamespace.Building,
-			object: buildingId,
-			relation: "parentSchool",
-			subjectSet: {
-				namespace: KetoNamespace.School,
-				object: schoolId,
-			},
-		});
+		await this.ketoService.unlinkChild(
+			KetoNamespace.Building,
+			buildingId,
+			schoolId
+		);
 	}
 }

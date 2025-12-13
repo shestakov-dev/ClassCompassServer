@@ -64,7 +64,7 @@ export class SchoolsService {
 		await this.prisma.client.school.ensureExists(id);
 	}
 
-	private async addMember(schoolId: string, identityId: string) {
+	async addMember(schoolId: string, identityId: string) {
 		await this.ketoService.createRelationship({
 			namespace: KetoNamespace.School,
 			object: schoolId,
@@ -73,7 +73,7 @@ export class SchoolsService {
 		});
 	}
 
-	private async removeMember(schoolId: string, identityId: string) {
+	async removeMember(schoolId: string, identityId: string) {
 		await this.ketoService.deleteRelationship({
 			namespace: KetoNamespace.School,
 			object: schoolId,
@@ -82,7 +82,7 @@ export class SchoolsService {
 		});
 	}
 
-	private async addAdmin(schoolId: string, identityId: string) {
+	async addAdmin(schoolId: string, identityId: string) {
 		await this.ketoService.createRelationship({
 			namespace: KetoNamespace.School,
 			object: schoolId,
@@ -91,7 +91,7 @@ export class SchoolsService {
 		});
 	}
 
-	private async removeAdmin(schoolId: string, identityId: string) {
+	async removeAdmin(schoolId: string, identityId: string) {
 		await this.ketoService.deleteRelationship({
 			namespace: KetoNamespace.School,
 			object: schoolId,
@@ -101,26 +101,18 @@ export class SchoolsService {
 	}
 
 	private async addParentPlatform(schoolId: string, platformId: string) {
-		await this.ketoService.createRelationship({
-			namespace: KetoNamespace.School,
-			object: schoolId,
-			relation: "parentPlatform",
-			subjectSet: {
-				namespace: KetoNamespace.Platform,
-				object: platformId,
-			},
-		});
+		await this.ketoService.linkChild(
+			KetoNamespace.School,
+			schoolId,
+			platformId
+		);
 	}
 
 	private async removeParentPlatform(schoolId: string, platformId: string) {
-		await this.ketoService.deleteRelationship({
-			namespace: KetoNamespace.School,
-			object: schoolId,
-			relation: "parentPlatform",
-			subjectSet: {
-				namespace: KetoNamespace.Platform,
-				object: platformId,
-			},
-		});
+		await this.ketoService.unlinkChild(
+			KetoNamespace.School,
+			schoolId,
+			platformId
+		);
 	}
 }

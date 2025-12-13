@@ -37,6 +37,20 @@ export class TeachersController {
 	}
 
 	/**
+	 * Get all teachers for a school
+	 */
+	@Get("school/:schoolId")
+	@ApiGet({ type: [TeacherEntity] })
+	@Auth("Access token", {
+		OR: ["teacher:read", "teacher:*"],
+	})
+	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
+		const teachers = await this.teachersService.findAllBySchool(schoolId);
+
+		return teachers.map(teacher => TeacherEntity.fromPlain(teacher));
+	}
+
+	/**
 	 * Get a teacher by ID
 	 */
 	@Get(":id")

@@ -80,26 +80,18 @@ export class DailySchedulesService {
 	}
 
 	private async addParentClass(dailyScheduleId: string, classId: string) {
-		await this.ketoService.createRelationship({
-			namespace: KetoNamespace.DailySchedule,
-			object: dailyScheduleId,
-			relation: "parentClass",
-			subjectSet: {
-				namespace: KetoNamespace.Class,
-				object: classId,
-			},
-		});
+		await this.ketoService.linkChild(
+			KetoNamespace.DailySchedule,
+			dailyScheduleId,
+			classId
+		);
 	}
 
 	private async removeParentClass(dailyScheduleId: string, classId: string) {
-		await this.ketoService.deleteRelationship({
-			namespace: KetoNamespace.DailySchedule,
-			object: dailyScheduleId,
-			relation: "parentClass",
-			subjectSet: {
-				namespace: KetoNamespace.Class,
-				object: classId,
-			},
-		});
+		await this.ketoService.unlinkChild(
+			KetoNamespace.DailySchedule,
+			dailyScheduleId,
+			classId
+		);
 	}
 }

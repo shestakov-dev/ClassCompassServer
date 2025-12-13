@@ -105,29 +105,21 @@ export class LessonsService {
 		lessonId: string,
 		dailyScheduleId: string
 	) {
-		await this.ketoService.createRelationship({
-			namespace: KetoNamespace.Lesson,
-			object: lessonId,
-			relation: "parentDailySchedule",
-			subjectSet: {
-				namespace: KetoNamespace.DailySchedule,
-				object: dailyScheduleId,
-			},
-		});
+		await this.ketoService.linkChild(
+			KetoNamespace.Lesson,
+			lessonId,
+			dailyScheduleId
+		);
 	}
 
 	private async removeParentDailySchedule(
 		lessonId: string,
 		dailyScheduleId: string
 	) {
-		await this.ketoService.deleteRelationship({
-			namespace: KetoNamespace.Lesson,
-			object: lessonId,
-			relation: "parentDailySchedule",
-			subjectSet: {
-				namespace: KetoNamespace.DailySchedule,
-				object: dailyScheduleId,
-			},
-		});
+		await this.ketoService.unlinkChild(
+			KetoNamespace.Lesson,
+			lessonId,
+			dailyScheduleId
+		);
 	}
 }

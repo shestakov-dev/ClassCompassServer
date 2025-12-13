@@ -71,26 +71,18 @@ export class ClassesService {
 	}
 
 	private async addParentSchool(classId: string, schoolId: string) {
-		await this.ketoService.createRelationship({
-			namespace: KetoNamespace.Class,
-			object: classId,
-			relation: "parentSchool",
-			subjectSet: {
-				namespace: KetoNamespace.School,
-				object: schoolId,
-			},
-		});
+		await this.ketoService.linkChild(
+			KetoNamespace.Class,
+			classId,
+			schoolId
+		);
 	}
 
 	private async removeParentSchool(classId: string, schoolId: string) {
-		await this.ketoService.deleteRelationship({
-			namespace: KetoNamespace.Class,
-			object: classId,
-			relation: "parentSchool",
-			subjectSet: {
-				namespace: KetoNamespace.School,
-				object: schoolId,
-			},
-		});
+		await this.ketoService.unlinkChild(
+			KetoNamespace.Class,
+			classId,
+			schoolId
+		);
 	}
 }
