@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateDailyScheduleDto } from "./dto/create-daily-schedule.dto";
 import { UpdateDailyScheduleDto } from "./dto/update-daily-schedule.dto";
@@ -29,8 +33,11 @@ export class DailySchedulesController {
 	 */
 	@Post()
 	@ApiPost({ type: DailyScheduleEntity })
-	@Auth("Access token", {
-		OR: ["dailySchedule:create", "dailySchedule:*"],
+	@KetoPermission<CreateDailyScheduleDto>({
+		namespace: KetoNamespace.Class,
+		relation: "manage",
+		source: "body",
+		key: "classId",
 	})
 	async create(@Body() createDailyScheduleDto: CreateDailyScheduleDto) {
 		return DailyScheduleEntity.fromPlain(
@@ -43,9 +50,6 @@ export class DailySchedulesController {
 	 */
 	@Get("class/:classId")
 	@ApiGet({ type: [DailyScheduleEntity] })
-	@Auth("Access token", {
-		OR: ["dailySchedule:read", "dailySchedule:*"],
-	})
 	async findAllByClass(@Param("classId", ParseUUIDPipe) classId: string) {
 		const dailySchedules =
 			await this.dailySchedulesService.findAllByClass(classId);
@@ -60,9 +64,6 @@ export class DailySchedulesController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: DailyScheduleEntity })
-	@Auth("Access token", {
-		OR: ["dailySchedule:read", "dailySchedule:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return DailyScheduleEntity.fromPlain(
 			await this.dailySchedulesService.findOne(id)
@@ -74,9 +75,6 @@ export class DailySchedulesController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: DailyScheduleEntity })
-	@Auth("Access token", {
-		OR: ["dailySchedule:update", "dailySchedule:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateDailyScheduleDto: UpdateDailyScheduleDto
@@ -91,9 +89,6 @@ export class DailySchedulesController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: DailyScheduleEntity })
-	@Auth("Access token", {
-		OR: ["dailySchedule:delete", "dailySchedule:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return DailyScheduleEntity.fromPlain(
 			await this.dailySchedulesService.remove(id)

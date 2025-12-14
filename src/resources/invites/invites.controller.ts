@@ -10,6 +10,10 @@ import {
 import { ApiExcludeEndpoint } from "@nestjs/swagger";
 import { Response } from "express";
 
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
 import { ApiPost } from "@decorators";
 
 import { CreateInviteDto } from "./dto/create-invite.dto";
@@ -28,6 +32,12 @@ export class InvitesController {
 		type: undefined,
 		errorResponses: [HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND],
 	})
+	@KetoPermission<CreateInviteDto>({
+		namespace: KetoNamespace.User,
+		relation: "manage",
+		source: "body",
+		key: "userId",
+	})
 	async createInvite(
 		@Body() createInviteDto: CreateInviteDto
 	): Promise<void> {
@@ -37,8 +47,8 @@ export class InvitesController {
 	/**
 	 * Use an invite code to get redirected and set user credentials
 	 */
-	@ApiExcludeEndpoint()
 	@Get(":inviteCode")
+	@ApiExcludeEndpoint()
 	async useInvite(
 		@Res() res: Response,
 		@Param("inviteCode") inviteCode: string
@@ -51,8 +61,8 @@ export class InvitesController {
 	/**
 	 * Mark an invite as completed and redirect the user appropriately
 	 */
-	@ApiExcludeEndpoint()
 	@Get("done/:inviteCode")
+	@ApiExcludeEndpoint()
 	async inviteDone(
 		@Res() res: Response,
 		@Param("inviteCode") inviteCode: string

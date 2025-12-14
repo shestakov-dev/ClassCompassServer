@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -27,8 +31,11 @@ export class UsersController {
 	 */
 	@Post()
 	@ApiPost({ type: UserEntity })
-	@Auth("Access token", {
-		OR: ["user:create", "user:*"],
+	@KetoPermission<CreateUserDto>({
+		namespace: KetoNamespace.School,
+		relation: "manage",
+		source: "body",
+		key: "schoolId",
 	})
 	async create(@Body() createUserDto: CreateUserDto) {
 		return UserEntity.fromPlain(
@@ -41,9 +48,6 @@ export class UsersController {
 	 */
 	@Get("school/:schoolId")
 	@ApiGet({ type: [UserEntity] })
-	@Auth("Access token", {
-		OR: ["user:read", "user:*"],
-	})
 	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
 		const users = await this.usersService.findAllBySchool(schoolId);
 
@@ -55,9 +59,6 @@ export class UsersController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: UserEntity })
-	@Auth("Access token", {
-		OR: ["user:read", "user:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return UserEntity.fromPlain(await this.usersService.findOne(id));
 	}
@@ -67,9 +68,6 @@ export class UsersController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: UserEntity })
-	@Auth("Access token", {
-		OR: ["user:update", "user:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateUserDto: UpdateUserDto
@@ -84,9 +82,6 @@ export class UsersController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: UserEntity })
-	@Auth("Access token", {
-		OR: ["user:delete", "user:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return UserEntity.fromPlain(await this.usersService.remove(id));
 	}

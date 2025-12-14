@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateFloorDto } from "./dto/create-floor.dto";
 import { UpdateFloorDto } from "./dto/update-floor.dto";
@@ -27,8 +31,11 @@ export class FloorsController {
 	 */
 	@Post()
 	@ApiPost({ type: FloorEntity })
-	@Auth("Access token", {
-		OR: ["floor:create", "floor:*"],
+	@KetoPermission<CreateFloorDto>({
+		namespace: KetoNamespace.Building,
+		relation: "manage",
+		source: "body",
+		key: "buildingId",
 	})
 	async create(@Body() createFloorDto: CreateFloorDto) {
 		return FloorEntity.fromPlain(
@@ -41,9 +48,6 @@ export class FloorsController {
 	 */
 	@Get("building/:buildingId")
 	@ApiGet({ type: [FloorEntity] })
-	@Auth("Access token", {
-		OR: ["floor:read", "floor:*"],
-	})
 	async findAllByBuilding(
 		@Param("buildingId", ParseUUIDPipe) buildingId: string
 	) {
@@ -57,9 +61,6 @@ export class FloorsController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: FloorEntity })
-	@Auth("Access token", {
-		OR: ["floor:read", "floor:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return FloorEntity.fromPlain(await this.floorsService.findOne(id));
 	}
@@ -69,9 +70,6 @@ export class FloorsController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: FloorEntity })
-	@Auth("Access token", {
-		OR: ["floor:update", "floor:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateFloorDto: UpdateFloorDto
@@ -86,9 +84,6 @@ export class FloorsController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: FloorEntity })
-	@Auth("Access token", {
-		OR: ["floor:delete", "floor:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return FloorEntity.fromPlain(await this.floorsService.remove(id));
 	}
