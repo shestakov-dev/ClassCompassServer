@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateLessonDto } from "./dto/create-lesson.dto";
 import { UpdateLessonDto } from "./dto/update-lesson.dto";
@@ -27,8 +31,11 @@ export class LessonsController {
 	 */
 	@Post()
 	@ApiPost({ type: LessonEntity })
-	@Auth("Access token", {
-		OR: ["lesson:create", "lesson:*"],
+	@KetoPermission<CreateLessonDto>({
+		namespace: KetoNamespace.DailySchedule,
+		relation: "manage",
+		source: "body",
+		key: "dailyScheduleId",
 	})
 	async create(@Body() createLessonDto: CreateLessonDto) {
 		return LessonEntity.fromPlain(
@@ -41,9 +48,6 @@ export class LessonsController {
 	 */
 	@Get("daily-schedule/:dailyScheduleId")
 	@ApiGet({ type: [LessonEntity] })
-	@Auth("Access token", {
-		OR: ["lesson:read", "lesson:*"],
-	})
 	async findAllByDailySchedule(
 		@Param("dailyScheduleId", ParseUUIDPipe) dailyScheduleId: string
 	) {
@@ -58,9 +62,6 @@ export class LessonsController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: LessonEntity })
-	@Auth("Access token", {
-		OR: ["lesson:read", "lesson:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return LessonEntity.fromPlain(await this.lessonsService.findOne(id));
 	}
@@ -70,9 +71,6 @@ export class LessonsController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: LessonEntity })
-	@Auth("Access token", {
-		OR: ["lesson:update", "lesson:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateLessonDto: UpdateLessonDto
@@ -87,9 +85,6 @@ export class LessonsController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: LessonEntity })
-	@Auth("Access token", {
-		OR: ["lesson:delete", "lesson:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return LessonEntity.fromPlain(await this.lessonsService.remove(id));
 	}

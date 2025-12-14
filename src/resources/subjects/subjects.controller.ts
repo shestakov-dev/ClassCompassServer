@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateSubjectDto } from "./dto/create-subject.dto";
 import { UpdateSubjectDto } from "./dto/update-subject.dto";
@@ -27,8 +31,11 @@ export class SubjectsController {
 	 */
 	@Post()
 	@ApiPost({ type: SubjectEntity })
-	@Auth("Access token", {
-		OR: ["subject:create", "subject:*"],
+	@KetoPermission<CreateSubjectDto>({
+		namespace: KetoNamespace.School,
+		relation: "manage",
+		source: "body",
+		key: "schoolId",
 	})
 	async create(@Body() createSubjectDto: CreateSubjectDto) {
 		return SubjectEntity.fromPlain(
@@ -41,9 +48,6 @@ export class SubjectsController {
 	 */
 	@Get("school/:schoolId")
 	@ApiGet({ type: [SubjectEntity] })
-	@Auth("Access token", {
-		OR: ["subject:read", "subject:*"],
-	})
 	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
 		const subjects = await this.subjectsService.findAllBySchool(schoolId);
 
@@ -55,9 +59,6 @@ export class SubjectsController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: SubjectEntity })
-	@Auth("Access token", {
-		OR: ["subject:read", "subject:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return SubjectEntity.fromPlain(await this.subjectsService.findOne(id));
 	}
@@ -67,9 +68,6 @@ export class SubjectsController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: SubjectEntity })
-	@Auth("Access token", {
-		OR: ["subject:update", "subject:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateSubjectDto: UpdateSubjectDto
@@ -84,9 +82,6 @@ export class SubjectsController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: SubjectEntity })
-	@Auth("Access token", {
-		OR: ["subject:delete", "subject:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return SubjectEntity.fromPlain(await this.subjectsService.remove(id));
 	}

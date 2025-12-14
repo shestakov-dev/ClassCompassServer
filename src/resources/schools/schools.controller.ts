@@ -10,7 +10,7 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateSchoolDto } from "./dto/create-school.dto";
 import { UpdateSchoolDto } from "./dto/update-school.dto";
@@ -31,7 +31,6 @@ export class SchoolsController {
 		type: SchoolEntity,
 		errorResponses: [HttpStatus.BAD_REQUEST, HttpStatus.CONFLICT],
 	})
-	@Auth("Access token", { OR: ["school:create", "school:*"] })
 	async create(@Body() createSchoolDto: CreateSchoolDto) {
 		return SchoolEntity.fromPlain(
 			await this.schoolsService.create(createSchoolDto)
@@ -46,9 +45,6 @@ export class SchoolsController {
 		type: [SchoolEntity],
 		errorResponses: [],
 	})
-	@Auth("Access token", {
-		OR: ["school:read", "school:*"],
-	})
 	async findAll() {
 		const schools = await this.schoolsService.findAll();
 
@@ -62,9 +58,6 @@ export class SchoolsController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: SchoolEntity })
-	@Auth("Access token", {
-		OR: ["school:read", "school:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return SchoolEntity.fromPlain(await this.schoolsService.findOne(id));
 	}
@@ -74,9 +67,6 @@ export class SchoolsController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: SchoolEntity })
-	@Auth("Access token", {
-		OR: ["school:update", "school:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateSchoolDto: UpdateSchoolDto
@@ -91,9 +81,6 @@ export class SchoolsController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: SchoolEntity })
-	@Auth("Access token", {
-		OR: ["school:delete", "school:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return SchoolEntity.fromPlain(await this.schoolsService.remove(id));
 	}

@@ -19,10 +19,23 @@ export class UserEntity implements User {
 	id: string;
 
 	/**
-	 * The user's name
-	 * @example "John Doe"
+	 * The user's Kratos identity ID
+	 * @example "550e8400-e29b-41d4-a716-446655440002"
 	 */
-	name: string;
+	@Exclude()
+	identityId: string;
+
+	/**
+	 * The user's first name
+	 * @example "John"
+	 */
+	firstName: string;
+
+	/**
+	 * The user's last name
+	 * @example "Doe"
+	 */
+	lastName: string;
 
 	/**
 	 * The user's email
@@ -31,23 +44,10 @@ export class UserEntity implements User {
 	email: string;
 
 	/**
-	 * The user's hashed password
-	 * @example "$2a$12$jxKQe.UECEK7URuSJ76h0uVnut14HePh2rvVFtz0cWnysbfcihGaa"
-	 */
-	@Exclude()
-	password: string;
-
-	/**
 	 * The user's school identifier
 	 * @example "550e8400-e29b-41d4-a716-446655440001"
 	 */
 	schoolId: string;
-
-	/**
-	 * The user's role identifiers
-	 * @example ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"]
-	 */
-	roleIds: string[] = [];
 
 	/**
 	 * The time the user was created

@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 
 import { DailySchedulesModule } from "@resources/daily-schedules/daily-schedules.module";
+import { OryModule } from "@resources/ory/ory.module";
 import { RoomsModule } from "@resources/rooms/rooms.module";
 import { SubjectsModule } from "@resources/subjects/subjects.module";
 import { TeachersModule } from "@resources/teachers/teachers.module";
@@ -19,6 +20,7 @@ import { LessonsService } from "./lessons.service";
 		TeachersModule,
 		SubjectsModule,
 		DailySchedulesModule,
+		OryModule,
 	],
 })
 export class LessonsModule {}

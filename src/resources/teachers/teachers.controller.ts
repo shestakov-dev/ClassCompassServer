@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateTeacherDto } from "./dto/create-teacher.dto";
 import { UpdateTeacherDto } from "./dto/update-teacher.dto";
@@ -27,8 +31,11 @@ export class TeachersController {
 	 */
 	@Post()
 	@ApiPost({ type: TeacherEntity })
-	@Auth("Access token", {
-		OR: ["teacher:create", "teacher:*"],
+	@KetoPermission<CreateTeacherDto>({
+		namespace: KetoNamespace.User,
+		relation: "manage",
+		source: "body",
+		key: "userId",
 	})
 	async create(@Body() createTeacherDto: CreateTeacherDto) {
 		return TeacherEntity.fromPlain(
@@ -37,13 +44,21 @@ export class TeachersController {
 	}
 
 	/**
+	 * Get all teachers for a school
+	 */
+	@Get("school/:schoolId")
+	@ApiGet({ type: [TeacherEntity] })
+	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
+		const teachers = await this.teachersService.findAllBySchool(schoolId);
+
+		return teachers.map(teacher => TeacherEntity.fromPlain(teacher));
+	}
+
+	/**
 	 * Get a teacher by ID
 	 */
 	@Get(":id")
 	@ApiGet({ type: TeacherEntity })
-	@Auth("Access token", {
-		OR: ["teacher:read", "teacher:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return TeacherEntity.fromPlain(await this.teachersService.findOne(id));
 	}
@@ -53,9 +68,6 @@ export class TeachersController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: TeacherEntity })
-	@Auth("Access token", {
-		OR: ["teacher:update", "teacher:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateTeacherDto: UpdateTeacherDto
@@ -70,9 +82,6 @@ export class TeachersController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: TeacherEntity })
-	@Auth("Access token", {
-		OR: ["teacher:delete", "teacher:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return TeacherEntity.fromPlain(await this.teachersService.remove(id));
 	}

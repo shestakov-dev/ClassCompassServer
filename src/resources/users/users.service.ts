@@ -1,10 +1,9 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { hash } from "bcryptjs";
+import { Injectable } from "@nestjs/common";
 
-import { RolesService } from "@resources/roles/roles.service";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+import { KetoService } from "@resources/ory/keto/keto.service";
+import { KratosService } from "@resources/ory/kratos/kratos.service";
 import { SchoolsService } from "@resources/schools/schools.service";
-
-import { Attribute, isAttribute } from "@shared/types/attributes";
 
 import { PrismaService } from "@prisma/prisma.service";
 
@@ -16,70 +15,51 @@ export class UsersService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly schoolsService: SchoolsService,
-		@Inject(forwardRef(() => RolesService))
-		private readonly rolesService: RolesService
+		private readonly kratosService: KratosService,
+		private readonly ketoService: KetoService
 	) {}
 
 	async create(createUserDto: CreateUserDto) {
 		await this.schoolsService.ensureExists(createUserDto.schoolId);
 
-		if (createUserDto.roleIds) {
-			await this.rolesService.ensureExistsMany(createUserDto.roleIds);
-		}
+		// Create an identity for the user in Ory Kratos
+		const kratosIdentity = await this.kratosService.createIdentity({
+			email: createUserDto.email,
+			firstName: createUserDto.firstName,
+			lastName: createUserDto.lastName,
+		});
 
-		// hash the user's password with 12 rounds of salt
-		createUserDto.password = await hash(createUserDto.password, 12);
-
-		const user = await this.prisma.client.user.create({
+		const newUser = await this.prisma.client.user.create({
 			data: {
-				// remove roleIds from the dto to avoid unknown field error
-				...{ ...createUserDto, roleIds: undefined },
-				roles: {
-					connect: createUserDto.roleIds?.map(id => ({ id })) ?? [],
-				},
-			},
-			include: {
-				roles: { select: { id: true }, where: { deleted: false } },
+				...createUserDto,
+				identityId: kratosIdentity.id,
 			},
 		});
 
-		return {
-			...user,
-			roles: undefined,
-			roleIds: user.roles.map(role => role.id),
-		};
+		// Add parent school relationship
+		await this.addParentSchool(newUser.id, createUserDto.schoolId);
+
+		// Add the user as a member of the school
+		await this.schoolsService.addMember(
+			createUserDto.schoolId,
+			kratosIdentity.id
+		);
+
+		return newUser;
 	}
 
 	async findAllBySchool(schoolId: string) {
 		await this.schoolsService.ensureExists(schoolId);
 
-		const users = await this.prisma.client.user.findMany({
+		return this.prisma.client.user.findMany({
 			where: { schoolId },
-			include: {
-				roles: { select: { id: true }, where: { deleted: false } },
-			},
 		});
-
-		return users.map(user => ({
-			...user,
-			roles: undefined,
-			roleIds: user.roles.map(role => role.id),
-		}));
 	}
 
-	async findOne(id: string) {
-		const user = await this.prisma.client.user.findUniqueOrThrow({
+	findOne(id: string) {
+		return this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
-			include: {
-				roles: { select: { id: true }, where: { deleted: false } },
-			},
 		});
-
-		return {
-			...user,
-			roles: undefined,
-			roleIds: user.roles.map(role => role.id),
-		};
 	}
 
 	async update(id: string, updateUserDto: UpdateUserDto) {
@@ -87,39 +67,40 @@ export class UsersService {
 			await this.schoolsService.ensureExists(updateUserDto.schoolId);
 		}
 
-		if (updateUserDto.roleIds) {
-			await this.rolesService.ensureExistsMany(updateUserDto.roleIds);
-		}
-
-		const user = await this.prisma.client.user.update({
+		const updatedUser = await this.prisma.client.user.update({
 			where: { id },
-			data: {
-				// remove roleIds from the dto to avoid unknown field error
-				...{ ...updateUserDto, roleIds: undefined },
-				roles: updateUserDto.roleIds
-					? {
-							set: updateUserDto.roleIds.map(roleId => ({
-								id: roleId,
-							})),
-						}
-					: undefined,
-			},
-			include: {
-				roles: { select: { id: true }, where: { deleted: false } },
-			},
+			data: updateUserDto,
 		});
 
-		return {
-			...user,
-			roles: undefined,
-			roleIds: user.roles.map(role => role.id),
-		};
+		await this.kratosService.updateIdentity(updatedUser.identityId, {
+			email: updatedUser.email,
+			firstName: updatedUser.firstName,
+			lastName: updatedUser.lastName,
+		});
+
+		return updatedUser;
 	}
 
-	remove(id: string) {
-		return this.prisma.client.user.softDelete({
+	async remove(id: string) {
+		const removedUser = await this.prisma.client.user.softDelete({
 			where: { id },
 		});
+
+		// Remove parent school relationship
+		await this.removeParentSchool(removedUser.id, removedUser.schoolId);
+
+		// Remove the user from the school members/admins
+		await this.schoolsService.removeMember(
+			removedUser.schoolId,
+			removedUser.identityId
+		);
+
+		await this.schoolsService.removeAdmin(
+			removedUser.schoolId,
+			removedUser.identityId
+		);
+
+		return removedUser;
 	}
 
 	findOneByEmail(email: string) {
@@ -128,22 +109,23 @@ export class UsersService {
 		});
 	}
 
-	async getAttributes(id: string) {
-		const user = await this.prisma.client.user.findUniqueOrThrow({
-			where: { id },
-			select: { roles: { select: { attributes: true } } },
-		});
-
-		return user.roles.reduce((attributes: Attribute[], role) => {
-			return [...attributes, ...role.attributes.filter(isAttribute)];
-		}, []);
-	}
-
 	async ensureExists(id: string) {
 		await this.prisma.client.user.ensureExists(id);
 	}
 
 	async ensureExistsMany(ids: string[]) {
 		await this.prisma.client.user.ensureExistsMany(ids);
+	}
+
+	private async addParentSchool(userId: string, schoolId: string) {
+		await this.ketoService.linkChild(KetoNamespace.User, userId, schoolId);
+	}
+
+	private async removeParentSchool(userId: string, schoolId: string) {
+		await this.ketoService.unlinkChild(
+			KetoNamespace.User,
+			userId,
+			schoolId
+		);
 	}
 }

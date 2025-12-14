@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateRoomDto } from "./dto/create-room.dto";
 import { UpdateRoomDto } from "./dto/update-room.dto";
@@ -27,8 +31,11 @@ export class RoomsController {
 	 */
 	@Post()
 	@ApiPost({ type: RoomEntity })
-	@Auth("Access token", {
-		OR: ["room:create", "room:*"],
+	@KetoPermission<CreateRoomDto>({
+		namespace: KetoNamespace.Building,
+		relation: "manage",
+		source: "body",
+		key: "floorId",
 	})
 	async create(@Body() createRoomDto: CreateRoomDto) {
 		return RoomEntity.fromPlain(
@@ -41,9 +48,6 @@ export class RoomsController {
 	 */
 	@Get("floor/:floorId")
 	@ApiGet({ type: [RoomEntity] })
-	@Auth("Access token", {
-		OR: ["room:read", "room:*"],
-	})
 	async findAllByFloor(@Param("floorId", ParseUUIDPipe) floorId: string) {
 		const rooms = await this.roomsService.findAllByFloor(floorId);
 
@@ -55,9 +59,6 @@ export class RoomsController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: RoomEntity })
-	@Auth("Access token", {
-		OR: ["room:read", "room:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return RoomEntity.fromPlain(await this.roomsService.findOne(id));
 	}
@@ -67,9 +68,6 @@ export class RoomsController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: RoomEntity })
-	@Auth("Access token", {
-		OR: ["room:update", "room:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateRoomDto: UpdateRoomDto
@@ -84,9 +82,6 @@ export class RoomsController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: RoomEntity })
-	@Auth("Access token", {
-		OR: ["room:delete", "room:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return RoomEntity.fromPlain(await this.roomsService.remove(id));
 	}

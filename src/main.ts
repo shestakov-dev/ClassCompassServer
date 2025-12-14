@@ -1,12 +1,9 @@
 import { ClassSerializerInterceptor, ValidationPipe } from "@nestjs/common";
 import { NestFactory, Reflector } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as cookieParser from "cookie-parser";
 import { SwaggerTheme, SwaggerThemeNameEnum } from "swagger-themes";
 
-import {
-	ACCESS_TOKEN_KEY,
-	REFRESH_TOKEN_KEY,
-} from "@shared/decorators/auth.decorator";
 import { PrismaClientExceptionFilter } from "@shared/filters/prisma-client-exception/prisma-client-exception.filter";
 
 import { AppModule } from "./app.module";
@@ -25,28 +22,15 @@ async function bootstrap() {
 		new ClassSerializerInterceptor(app.get(Reflector))
 	);
 
+	app.use(cookieParser());
+
 	const config = new DocumentBuilder()
 		.setTitle("Class Compass API")
 		.setDescription("An API for the Class Compass application")
 		.setVersion("1.0")
 		.addServer("/")
+		.addServer("https://api.classcompass.shestakov.app")
 		.addServer("http://localhost:8393")
-		.addBearerAuth(
-			{
-				type: "http",
-				scheme: "bearer",
-				bearerFormat: "JWT",
-			},
-			ACCESS_TOKEN_KEY
-		)
-		.addBearerAuth(
-			{
-				type: "http",
-				scheme: "bearer",
-				bearerFormat: "JWT",
-			},
-			REFRESH_TOKEN_KEY
-		)
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config, {
@@ -63,11 +47,10 @@ async function bootstrap() {
 			docExpansion: "none", // collapse operations by default
 			tagsSorter: "alpha", // sort tags alphabetically
 		},
+		customfavIcon: "/assets/favicon/favicon.ico",
 	});
 
 	app.useGlobalFilters(new PrismaClientExceptionFilter());
-
-	app.enableCors();
 
 	await app.listen(process.env.PORT ?? 8393);
 }

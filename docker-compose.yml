@@ -11,9 +11,12 @@ services:
         restart: unless-stopped
         depends_on:
             - postgres
+            - redis
+        networks:
+            - backend-network
 
     postgres:
-        container_name: class-compass-postgres
+        container_name: class-compass-server-postgres
         image: postgres:18-alpine
         restart: unless-stopped
         ports:
@@ -25,6 +28,32 @@ services:
             POSTGRES_DB: ${POSTGRES_DB}
         volumes:
             - class-compass-postgres-data:/var/lib/postgresql/data
+        networks:
+            - backend-network
+
+    redis:
+        image: redis:7-alpine
+        container_name: class-compass-server-redis
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        volumes:
+            - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+            - ./config/redis/users.acl:/usr/local/etc/redis/users.acl
+            - redis-data:/data
+        command: redis-server /usr/local/etc/redis/redis.conf
+        healthcheck:
+            test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
+        networks:
+            - backend-network
 
 volumes:
     class-compass-postgres-data:
+    redis-data:
+
+networks:
+    backend-network:
+        driver: bridge

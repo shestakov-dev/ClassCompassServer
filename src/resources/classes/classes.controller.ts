@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateClassDto } from "./dto/create-class.dto";
 import { UpdateClassDto } from "./dto/update-class.dto";
@@ -27,8 +31,11 @@ export class ClassesController {
 	 */
 	@Post()
 	@ApiPost({ type: ClassEntity })
-	@Auth("Access token", {
-		OR: ["class:create", "class:*"],
+	@KetoPermission<CreateClassDto>({
+		namespace: KetoNamespace.School,
+		relation: "manage",
+		source: "body",
+		key: "schoolId",
 	})
 	async create(@Body() createClassDto: CreateClassDto) {
 		return ClassEntity.fromPlain(
@@ -41,9 +48,6 @@ export class ClassesController {
 	 */
 	@Get("school/:schoolId")
 	@ApiGet({ type: [ClassEntity] })
-	@Auth("Access token", {
-		OR: ["class:read", "class:*"],
-	})
 	async findAllBySchool(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
 		const classes = await this.classesService.findAllBySchool(schoolId);
 
@@ -55,9 +59,6 @@ export class ClassesController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: ClassEntity })
-	@Auth("Access token", {
-		OR: ["class:read", "class:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return ClassEntity.fromPlain(await this.classesService.findOne(id));
 	}
@@ -67,9 +68,6 @@ export class ClassesController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: ClassEntity })
-	@Auth("Access token", {
-		OR: ["class:update", "class:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateClassDto: UpdateClassDto
@@ -84,9 +82,6 @@ export class ClassesController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: ClassEntity })
-	@Auth("Access token", {
-		OR: ["class:delete", "class:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return ClassEntity.fromPlain(await this.classesService.remove(id));
 	}

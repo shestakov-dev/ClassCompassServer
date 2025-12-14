@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
+import { SchoolsService } from "@resources/schools/schools.service";
 import { SubjectsService } from "@resources/subjects/subjects.service";
 import { UsersService } from "@resources/users/users.service";
 
@@ -14,7 +15,8 @@ export class TeachersService {
 		private readonly prisma: PrismaService,
 		private readonly usersService: UsersService,
 		@Inject(forwardRef(() => SubjectsService))
-		private readonly subjectsService: SubjectsService
+		private readonly subjectsService: SubjectsService,
+		private readonly schoolsService: SchoolsService
 	) {}
 
 	async create(createTeacherDto: CreateTeacherDto) {
@@ -45,6 +47,14 @@ export class TeachersService {
 			subjects: undefined,
 			subjectIds: teacher.subjects.map(subject => subject.id),
 		};
+	}
+
+	async findAllBySchool(schoolId: string) {
+		await this.schoolsService.ensureExists(schoolId);
+
+		return this.prisma.client.teacher.findMany({
+			where: { user: { schoolId } },
+		});
 	}
 
 	async findOne(id: string) {

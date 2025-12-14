@@ -9,7 +9,11 @@ import {
 	Post,
 } from "@nestjs/common";
 
-import { ApiDelete, ApiGet, ApiPatch, ApiPost, Auth } from "@decorators";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+
+import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+
+import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateStudentDto } from "./dto/create-student.dto";
 import { UpdateStudentDto } from "./dto/update-student.dto";
@@ -27,8 +31,11 @@ export class StudentsController {
 	 */
 	@Post()
 	@ApiPost({ type: StudentEntity })
-	@Auth("Access token", {
-		OR: ["student:create", "student:*"],
+	@KetoPermission<CreateStudentDto>({
+		namespace: KetoNamespace.User,
+		relation: "manage",
+		source: "body",
+		key: "userId",
 	})
 	async create(@Body() createStudentDto: CreateStudentDto) {
 		return StudentEntity.fromPlain(
@@ -41,9 +48,6 @@ export class StudentsController {
 	 */
 	@Get("class/:classId")
 	@ApiGet({ type: [StudentEntity] })
-	@Auth("Access token", {
-		OR: ["student:read", "student:*"],
-	})
 	async findAllByClass(@Param("classId", ParseUUIDPipe) classId: string) {
 		const students = await this.studentsService.findAllByClass(classId);
 
@@ -55,9 +59,6 @@ export class StudentsController {
 	 */
 	@Get(":id")
 	@ApiGet({ type: StudentEntity })
-	@Auth("Access token", {
-		OR: ["student:read", "student:*"],
-	})
 	async findOne(@Param("id", ParseUUIDPipe) id: string) {
 		return StudentEntity.fromPlain(await this.studentsService.findOne(id));
 	}
@@ -67,9 +68,6 @@ export class StudentsController {
 	 */
 	@Patch(":id")
 	@ApiPatch({ type: StudentEntity })
-	@Auth("Access token", {
-		OR: ["student:update", "student:*"],
-	})
 	async update(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Body() updateStudentDto: UpdateStudentDto
@@ -84,9 +82,6 @@ export class StudentsController {
 	 */
 	@Delete(":id")
 	@ApiDelete({ type: StudentEntity })
-	@Auth("Access token", {
-		OR: ["student:delete", "student:*"],
-	})
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return StudentEntity.fromPlain(await this.studentsService.remove(id));
 	}

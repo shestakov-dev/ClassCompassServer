@@ -23,58 +23,19 @@ enum Day {
     sunday
 }
 
-// TODO: Add more fields for things like ip address, user agent, etc.
-model Session {
-    id           String   @id @default(uuid())
-    refreshToken String   @unique
-    expiresAt    DateTime
-
-    userId String
-    user   User   @relation(fields: [userId], references: [id])
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
-
-    @@index([userId])
-}
-
-model Role {
-    id         String   @id @default(uuid())
-    name       String   @unique
-    attributes String[] @default([])
-
-    schoolId String
-    school   School @relation(fields: [schoolId], references: [id])
-
-    users User[]
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
-
-    // The role name should be unique within a school
-    @@unique([schoolId, name])
-    @@index([schoolId])
-}
-
 model User {
-    id       String @id @default(uuid())
-    name     String
-    email    String @unique
-    password String
+    id         String @id @default(uuid())
+    // The Kratos (IdP) identity ID
+    identityId String @unique
+    firstName  String
+    lastName   String
+    email      String @unique
 
     schoolId String
     school   School @relation(fields: [schoolId], references: [id])
 
     teacher Teacher?
     student Student?
-
-    roles Role[]
-
-    sessions Session[]
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -91,8 +52,6 @@ model School {
     users User[]
 
     classes Class[]
-
-    roles Role[]
 
     buildings Building[]
 

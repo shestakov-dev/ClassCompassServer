@@ -166,3 +166,6 @@ terraform.rc
 
 # Include backend.tfvars
 !backend.tfvars
+
+# Configuration files and secrets
+config/
