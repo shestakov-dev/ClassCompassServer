@@ -5,17 +5,27 @@ import {
 	NamespaceCheckable,
 } from "@resources/ory/keto/definitions";
 
-type IdSources = "body" | "params" | "query";
+// Infer possible key values based on the source type
+type KetoIdSourceBody<Body extends Record<string, any>> = {
+	source: "body";
+	key: keyof Body & string;
+};
 
-type KetoIdSource<Body extends Record<string, any> = any> =
-	| {
-			source: IdSources;
-			key: keyof Body;
-	  }
-	| {
-			source: "fixed";
-			value: string;
-	  };
+type KetoIdSourceParamOrQuery = {
+	source: "params" | "query";
+	key: string;
+};
+
+type KetoIdSourceFixed = {
+	source: "fixed";
+	value: string;
+};
+
+// Allow using different source types for extracting the object ID
+type KetoIdSource<Body extends Record<string, any>> =
+	| KetoIdSourceBody<Body>
+	| KetoIdSourceParamOrQuery
+	| KetoIdSourceFixed;
 
 export type KetoPermissionOptions<
 	Body extends Record<string, any> = any,

@@ -4,9 +4,11 @@ import {
 	HttpStatus,
 } from "@nestjs/common";
 import {
+	ApiForbiddenResponse,
 	ApiResponse,
 	ApiResponseMetadata,
 	ApiResponseOptions,
+	ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
 const CUSTOM_ERROR_RESPONSES: Partial<Record<HttpStatus, ApiResponseOptions>> =
@@ -39,6 +41,30 @@ export function ApiResponses({
 	successResponse = HttpStatus.OK,
 	errorResponses = [],
 }: ApiResponsesOptions) {
+	const unauthorizedResponseDecorator = ApiUnauthorizedResponse({
+		description: "Access credentials are invalid",
+		example: {
+			error: {
+				code: 401,
+				status: "Unauthorized",
+				message: "Access credentials are invalid",
+			},
+		},
+	});
+
+	const forbiddenReponseDecorator = ApiForbiddenResponse({
+		description:
+			"Access credentials are not sufficient to access this resource",
+		example: {
+			error: {
+				code: 403,
+				status: "Forbidden",
+				message:
+					"Access credentials are not sufficient to access this resource",
+			},
+		},
+	});
+
 	const successResponseDecorator = ApiResponse({
 		type,
 		status: successResponse,
@@ -67,6 +93,8 @@ export function ApiResponses({
 	});
 
 	return applyDecorators(
+		unauthorizedResponseDecorator,
+		forbiddenReponseDecorator,
 		successResponseDecorator,
 		...errorResponseDecorators
 	);
