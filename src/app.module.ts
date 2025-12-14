@@ -16,6 +16,7 @@ import { EmailModule } from "@resources/email/email.module";
 import { FloorsModule } from "@resources/floors/floors.module";
 import { InvitesModule } from "@resources/invites/invites.module";
 import { LessonsModule } from "@resources/lessons/lessons.module";
+import { KetoPermissionGuard } from "@resources/ory/guards/keto-permission.guard";
 import { OryModule } from "@resources/ory/ory.module";
 import { RoomsModule } from "@resources/rooms/rooms.module";
 import { SchoolsModule } from "@resources/schools/schools.module";
@@ -32,6 +33,10 @@ import { BootstrapService } from "./bootstrap.service";
 		{
 			provide: APP_GUARD,
 			useClass: OathkeeperIdTokenGuard,
+		},
+		{
+			provide: APP_GUARD,
+			useClass: KetoPermissionGuard,
 		},
 		BootstrapService,
 	],
