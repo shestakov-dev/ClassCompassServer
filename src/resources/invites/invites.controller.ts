@@ -2,6 +2,7 @@ import {
 	Body,
 	Controller,
 	Get,
+	HttpCode,
 	HttpStatus,
 	Param,
 	Post,
@@ -28,8 +29,10 @@ export class InvitesController {
 	 * Create a new invite for a user to set up their account
 	 */
 	@Post()
+	@HttpCode(HttpStatus.NO_CONTENT)
 	@ApiPost({
 		type: undefined,
+		successResponse: HttpStatus.NO_CONTENT,
 		errorResponses: [HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND],
 	})
 	@KetoPermission<CreateInviteDto>({

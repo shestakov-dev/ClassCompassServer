@@ -3,6 +3,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpCode,
 	HttpStatus,
 	Param,
 	ParseUUIDPipe,
@@ -89,7 +90,12 @@ export class SchoolsController {
 	 * Promote a member to admin in a school
 	 */
 	@Post(":id/admins/:userId")
-	@ApiPost({ type: undefined })
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@ApiPost({
+		type: undefined,
+		successResponse: HttpStatus.NO_CONTENT,
+		errorResponses: [HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND],
+	})
 	async promoteToAdmin(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Param("userId", ParseUUIDPipe) userId: string
@@ -101,7 +107,8 @@ export class SchoolsController {
 	 * Demote an admin to member in a school
 	 */
 	@Delete(":id/admins/:userId")
-	@ApiDelete({ type: undefined })
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@ApiDelete({ type: undefined, successResponse: HttpStatus.NO_CONTENT })
 	async demoteFromAdmin(
 		@Param("id", ParseUUIDPipe) id: string,
 		@Param("userId", ParseUUIDPipe) userId: string
