@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
 import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
@@ -14,6 +14,7 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 export class UsersService {
 	constructor(
 		private readonly prisma: PrismaService,
+		@Inject(forwardRef(() => SchoolsService))
 		private readonly schoolsService: SchoolsService,
 		private readonly kratosService: KratosService,
 		private readonly ketoService: KetoService

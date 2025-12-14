@@ -1,8 +1,14 @@
-import { Injectable } from "@nestjs/common";
+import {
+	ForbiddenException,
+	forwardRef,
+	Inject,
+	Injectable,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
+import { UsersService } from "@resources/users/users.service";
 
 import { PrismaService } from "@prisma/prisma.service";
 
@@ -16,7 +22,9 @@ export class SchoolsService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly ketoService: KetoService,
-		private readonly configService: ConfigService
+		private readonly configService: ConfigService,
+		@Inject(forwardRef(() => UsersService))
+		private readonly usersService: UsersService
 	) {
 		this.platformObjectId =
 			this.configService.getOrThrow<string>("PLATFORM_OBJECT_ID");
@@ -58,6 +66,34 @@ export class SchoolsService {
 		await this.removeParentPlatform(newSchool.id, this.platformObjectId);
 
 		return newSchool;
+	}
+
+	async promoteToAdmin(schoolId: string, userId: string) {
+		const { identityId, schoolId: userSchoolId } =
+			await this.usersService.findOne(userId);
+
+		if (userSchoolId !== schoolId) {
+			throw new ForbiddenException(
+				"User does not belong to the specified school"
+			);
+		}
+
+		await this.removeMember(schoolId, identityId);
+		await this.addAdmin(schoolId, identityId);
+	}
+
+	async demoteFromAdmin(schoolId: string, userId: string) {
+		const { identityId, schoolId: userSchoolId } =
+			await this.usersService.findOne(userId);
+
+		if (userSchoolId !== schoolId) {
+			throw new ForbiddenException(
+				"User does not belong to the specified school"
+			);
+		}
+
+		await this.removeAdmin(schoolId, identityId);
+		await this.addMember(schoolId, identityId);
 	}
 
 	async ensureExists(id: string) {

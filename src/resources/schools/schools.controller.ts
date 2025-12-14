@@ -84,4 +84,28 @@ export class SchoolsController {
 	async remove(@Param("id", ParseUUIDPipe) id: string) {
 		return SchoolEntity.fromPlain(await this.schoolsService.remove(id));
 	}
+
+	/**
+	 * Promote a member to admin in a school
+	 */
+	@Post(":id/admins/:userId")
+	@ApiPost({ type: undefined })
+	async promoteToAdmin(
+		@Param("id", ParseUUIDPipe) id: string,
+		@Param("userId", ParseUUIDPipe) userId: string
+	) {
+		await this.schoolsService.promoteToAdmin(id, userId);
+	}
+
+	/**
+	 * Demote an admin to member in a school
+	 */
+	@Delete(":id/admins/:userId")
+	@ApiDelete({ type: undefined })
+	async demoteFromAdmin(
+		@Param("id", ParseUUIDPipe) id: string,
+		@Param("userId", ParseUUIDPipe) userId: string
+	) {
+		await this.schoolsService.demoteFromAdmin(id, userId);
+	}
 }

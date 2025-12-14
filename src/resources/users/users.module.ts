@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 
 import { OryModule } from "@resources/ory/ory.module";
 import { SchoolsModule } from "@resources/schools/schools.module";
@@ -11,7 +11,7 @@ import { UsersService } from "./users.service";
 @Module({
 	controllers: [UsersController],
 	providers: [UsersService],
-	imports: [PrismaModule, SchoolsModule, OryModule],
+	imports: [PrismaModule, forwardRef(() => SchoolsModule), OryModule],
 	exports: [UsersService],
 })
 export class UsersModule {}
