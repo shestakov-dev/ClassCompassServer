@@ -1,9 +1,29 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsDate, IsOptional, IsUUID } from "class-validator";
+import {
+	IsBoolean,
+	IsDate,
+	IsOptional,
+	IsUUID,
+	Validate,
+	ValidateIf,
+	ValidationArguments,
+	ValidatorConstraint,
+	ValidatorConstraintInterface,
+} from "class-validator";
+
+@ValidatorConstraint({ name: "IsAfter", async: false })
+class IsAfterConstraint implements ValidatorConstraintInterface {
+	validate(propertyValue: string, args: ValidationArguments) {
+		return propertyValue > (args.object as any)[args.constraints[0]];
+	}
+	defaultMessage(args: ValidationArguments) {
+		return `"${args.property}" must be after "${args.constraints[0]}"`;
+	}
+}
 
 @ApiSchema({
-	description: "The filters for querying lessons at a specific time",
+	description: "Filter lessons by various criteria",
 })
 export class FilterLessonsDto {
 	/**
@@ -12,9 +32,33 @@ export class FilterLessonsDto {
 	 * the time part is used to filter lessons occurring at that time
 	 * @example "2023-03-15T09:30:00Z"
 	 */
+	@IsOptional()
 	@IsDate()
 	@Type(() => Date)
-	timestamp: Date;
+	timestamp?: Date;
+
+	/**
+	 * The start date to filter lessons from;
+	 * Lessons occurring on or after this date will be included
+	 * @example "2023-03-13T00:00:00Z"
+	 */
+	@IsOptional()
+	@IsDate()
+	@Type(() => Date)
+	from?: Date;
+
+	/**
+	 * The end date to filter lessons to;
+	 * Lessons occurring on or before this date will be included
+	 * @example "2023-03-19T23:59:59Z"
+	 */
+	// Only validate 'to' if 'from' exists
+	@ValidateIf(dto => dto.from)
+	@IsOptional()
+	@IsDate()
+	@Type(() => Date)
+	@Validate(IsAfterConstraint, ["from"])
+	to?: Date;
 
 	/**
 	 * The class identifier to filter lessons by

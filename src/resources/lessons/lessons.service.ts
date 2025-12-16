@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { Day, LessonWeek, Prisma } from "@prisma/client";
-import { getDay, getISOWeek, set } from "date-fns";
+import { getDay, getISOWeek } from "date-fns";
 
 import { DailySchedulesService } from "@resources/daily-schedules/daily-schedules.service";
 import { KetoNamespace } from "@resources/ory/keto/definitions";
@@ -14,6 +14,8 @@ import { PrismaService } from "@prisma/prisma.service";
 import { CreateLessonDto } from "./dto/create-lesson.dto";
 import { FilterLessonsDto } from "./dto/filter-lessons.dto";
 import { UpdateLessonDto } from "./dto/update-lesson.dto";
+
+import { normalizeDate } from "./utils/dates";
 
 @Injectable()
 export class LessonsService {
@@ -69,33 +71,61 @@ export class LessonsService {
 	}
 
 	async findAllBySchool(schoolId: string, filters: FilterLessonsDto) {
-		const { timestamp, classId, subjectId, roomId, teacherId, ignoreWeek } =
-			filters;
+		const {
+			timestamp,
+			from,
+			to,
+			classId,
+			subjectId,
+			roomId,
+			teacherId,
+			ignoreWeek,
+		} = filters;
+
+		let referenceDate: Date;
+		let timeFilter: Prisma.LessonWhereInput;
+
+		if (from && to) {
+			referenceDate = from;
+
+			const normalizedFrom = normalizeDate(from);
+
+			const normalizedTo = normalizeDate(to);
+
+			timeFilter = {
+				startTime: { lte: normalizedTo },
+				endTime: { gte: normalizedFrom },
+			};
+		} else if (timestamp) {
+			referenceDate = timestamp;
+
+			const normalizedTime = normalizeDate(timestamp);
+
+			timeFilter = {
+				startTime: { lte: normalizedTime },
+				endTime: { gte: normalizedTime },
+			};
+		} else {
+			throw new BadRequestException(
+				`Either "timestamp" or both "from" and "to" must be provided`
+			);
+		}
 
 		// Calculate day & week using the provided timestamp
-		const dayIndex = getDay(timestamp);
+		const dayIndex = getDay(referenceDate);
 		const currentDay = this.DAY_MAPPING[dayIndex];
 
-		const isoWeek = getISOWeek(timestamp);
+		const isoWeek = getISOWeek(referenceDate);
 		const currentWeek =
 			isoWeek % 2 === 0 ? LessonWeek.even : LessonWeek.odd;
-
-		// Normalize timestamp to 1970-01-01 for time comparison later
-		// This ensures we compare the time portion only
-		const timeOnlyTimestamp = set(timestamp, {
-			year: 1970,
-			month: 0, // January is 0
-			date: 1,
-		});
 
 		const where: Prisma.LessonWhereInput = {
 			subjectId,
 			roomId,
 			teacherId,
 
-			// The time must be within the lesson's start and end time
-			startTime: { lte: timeOnlyTimestamp },
-			endTime: { gte: timeOnlyTimestamp },
+			// Apply time filtering based on a timestamp or from/to range
+			...timeFilter,
 
 			// The lesson must be scheduled for the current week
 			// or every week unless ignoreWeek is true
@@ -103,7 +133,8 @@ export class LessonsService {
 				? undefined
 				: { in: [currentWeek, LessonWeek.every] },
 
-			// DailySchedule relation filters (Class and Day)
+			// Only get lessons for the current day
+			// and for classes in the specified school
 			dailySchedule: {
 				is: {
 					day: currentDay,

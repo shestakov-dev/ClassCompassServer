@@ -2,7 +2,8 @@ import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { $Enums } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
 import { IsDate, IsEnum, IsNumber, IsUUID } from "class-validator";
-import { set } from "date-fns";
+
+import { normalizeDate } from "../utils/dates";
 
 @ApiSchema({
 	description: "The data required to create a new lesson",
@@ -21,13 +22,7 @@ export class CreateLessonDto {
 	 */
 	@IsDate()
 	@Type(() => Date)
-	@Transform(({ value }) =>
-		set(new Date(0), {
-			hours: value.getHours(),
-			minutes: value.getMinutes(),
-			seconds: value.getSeconds(),
-		})
-	)
+	@Transform(({ value }) => normalizeDate(value))
 	startTime: Date;
 
 	/**
@@ -36,13 +31,7 @@ export class CreateLessonDto {
 	 */
 	@IsDate()
 	@Type(() => Date)
-	@Transform(({ value }) =>
-		set(new Date(0), {
-			hours: value.getHours(),
-			minutes: value.getMinutes(),
-			seconds: value.getSeconds(),
-		})
-	)
+	@Transform(({ value }) => normalizeDate(value))
 	endTime: Date;
 
 	/**
