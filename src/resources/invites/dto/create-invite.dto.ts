@@ -15,7 +15,6 @@ export class CreateInviteDto {
 	/**
 	 * The time-to-live for the invite in seconds
 	 * @example 3600
-	 * @default 30 * 24 * 60 * 60 // 30 days
 	 */
 	@IsOptional()
 	@IsNumber()

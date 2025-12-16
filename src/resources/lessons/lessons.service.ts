@@ -1,4 +1,6 @@
 import { Injectable } from "@nestjs/common";
+import { Day, LessonWeek, Prisma } from "@prisma/client";
+import { getDay, getISOWeek, set } from "date-fns";
 
 import { DailySchedulesService } from "@resources/daily-schedules/daily-schedules.service";
 import { KetoNamespace } from "@resources/ory/keto/definitions";
@@ -10,10 +12,22 @@ import { TeachersService } from "@resources/teachers/teachers.service";
 import { PrismaService } from "@prisma/prisma.service";
 
 import { CreateLessonDto } from "./dto/create-lesson.dto";
+import { FilterLessonsDto } from "./dto/filter-lessons.dto";
 import { UpdateLessonDto } from "./dto/update-lesson.dto";
 
 @Injectable()
 export class LessonsService {
+	// Define mapping for date-fns getDay (0=Sunday) to Prisma Day Enum
+	private readonly DAY_MAPPING: Day[] = [
+		Day.sunday,
+		Day.monday,
+		Day.tuesday,
+		Day.wednesday,
+		Day.thursday,
+		Day.friday,
+		Day.saturday,
+	];
+
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly roomsService: RoomsService,
@@ -52,6 +66,56 @@ export class LessonsService {
 		return this.prisma.client.lesson.findMany({
 			where: { dailyScheduleId },
 		});
+	}
+
+	async findAllBySchool(schoolId: string, filters: FilterLessonsDto) {
+		const { timestamp, classId, subjectId, roomId, teacherId, ignoreWeek } =
+			filters;
+
+		// Calculate day & week using the provided timestamp
+		const dayIndex = getDay(timestamp);
+		const currentDay = this.DAY_MAPPING[dayIndex];
+
+		const isoWeek = getISOWeek(timestamp);
+		const currentWeek =
+			isoWeek % 2 === 0 ? LessonWeek.even : LessonWeek.odd;
+
+		// Normalize timestamp to 1970-01-01 for time comparison later
+		// This ensures we compare the time portion only
+		const timeOnlyTimestamp = set(timestamp, {
+			year: 1970,
+			month: 0, // January is 0
+			date: 1,
+		});
+
+		const where: Prisma.LessonWhereInput = {
+			subjectId,
+			roomId,
+			teacherId,
+
+			// The time must be within the lesson's start and end time
+			startTime: { lte: timeOnlyTimestamp },
+			endTime: { gte: timeOnlyTimestamp },
+
+			// The lesson must be scheduled for the current week
+			// or every week unless ignoreWeek is true
+			lessonWeek: ignoreWeek
+				? undefined
+				: { in: [currentWeek, LessonWeek.every] },
+
+			// DailySchedule relation filters (Class and Day)
+			dailySchedule: {
+				is: {
+					day: currentDay,
+					classId,
+					class: {
+						schoolId,
+					},
+				},
+			},
+		};
+
+		return this.prisma.client.lesson.findMany({ where });
 	}
 
 	findOne(id: string) {
