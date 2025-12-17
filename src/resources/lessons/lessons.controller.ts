@@ -7,6 +7,7 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	Query,
 } from "@nestjs/common";
 
 import { KetoNamespace } from "@resources/ory/keto/definitions";
@@ -16,6 +17,7 @@ import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
 import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateLessonDto } from "./dto/create-lesson.dto";
+import { FilterLessonsDto } from "./dto/filter-lessons.dto";
 import { UpdateLessonDto } from "./dto/update-lesson.dto";
 
 import { LessonEntity } from "./entities/lesson.entity";
@@ -41,6 +43,23 @@ export class LessonsController {
 		return LessonEntity.fromPlain(
 			await this.lessonsService.create(createLessonDto)
 		);
+	}
+
+	/**
+	 * Get all lessons for a school filtered by various criteria
+	 */
+	@Get("school/:schoolId")
+	@ApiGet({ type: [LessonEntity] })
+	async findFiltered(
+		@Param("schoolId", ParseUUIDPipe) schoolId: string,
+		@Query() filters: FilterLessonsDto
+	) {
+		const lessons = await this.lessonsService.findAllBySchool(
+			schoolId,
+			filters
+		);
+
+		return lessons.map(lesson => LessonEntity.fromPlain(lesson));
 	}
 
 	/**
