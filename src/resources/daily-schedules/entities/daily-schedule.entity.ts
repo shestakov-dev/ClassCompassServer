@@ -1,6 +1,8 @@
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { $Enums, DailySchedule } from "@prisma/client";
-import { plainToInstance } from "class-transformer";
+import { plainToInstance, Type } from "class-transformer";
+
+import { ClassEntity } from "@resources/classes/entities/class.entity";
 
 @ApiSchema({
 	description: "A daily schedule object",
@@ -30,6 +32,12 @@ export class DailyScheduleEntity implements DailySchedule {
 	 * @example "550e8400-e29b-41d4-a716-446655440002"
 	 */
 	classId: string;
+
+	/**
+	 * The daily schedule's populated class
+	 */
+	@Type(() => ClassEntity)
+	class?: ClassEntity;
 
 	/**
 	 * The time the daily schedule was created

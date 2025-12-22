@@ -51,6 +51,16 @@ export class LessonsService {
 
 		const newLesson = await this.prisma.client.lesson.create({
 			data: createLessonDto,
+			include: {
+				room: true,
+				teacher: {
+					include: { user: true },
+				},
+				subject: true,
+				dailySchedule: {
+					include: { class: true },
+				},
+			},
 		});
 
 		// Add parent daily schedule relationship
@@ -67,6 +77,16 @@ export class LessonsService {
 
 		return this.prisma.client.lesson.findMany({
 			where: { dailyScheduleId },
+			include: {
+				room: true,
+				teacher: {
+					include: { user: true },
+				},
+				subject: true,
+				dailySchedule: {
+					include: { class: true },
+				},
+			},
 		});
 	}
 
@@ -152,12 +172,34 @@ export class LessonsService {
 			},
 		};
 
-		return this.prisma.client.lesson.findMany({ where });
+		return this.prisma.client.lesson.findMany({
+			where,
+			include: {
+				room: true,
+				teacher: {
+					include: { user: true },
+				},
+				subject: true,
+				dailySchedule: {
+					include: { class: true },
+				},
+			},
+		});
 	}
 
 	findOne(id: string) {
 		return this.prisma.client.lesson.findUniqueOrThrow({
 			where: { id },
+			include: {
+				room: true,
+				teacher: {
+					include: { user: true },
+				},
+				subject: true,
+				dailySchedule: {
+					include: { class: true },
+				},
+			},
 		});
 	}
 
@@ -185,12 +227,32 @@ export class LessonsService {
 		return this.prisma.client.lesson.update({
 			where: { id },
 			data: updateLessonDto,
+			include: {
+				room: true,
+				teacher: {
+					include: { user: true },
+				},
+				subject: true,
+				dailySchedule: {
+					include: { class: true },
+				},
+			},
 		});
 	}
 
 	async remove(id: string) {
 		const removedLesson = await this.prisma.client.lesson.softDelete({
 			where: { id },
+			include: {
+				room: true,
+				teacher: {
+					include: { user: true },
+				},
+				subject: true,
+				dailySchedule: {
+					include: { class: true },
+				},
+			},
 		});
 
 		// Remove parent daily schedule relationship

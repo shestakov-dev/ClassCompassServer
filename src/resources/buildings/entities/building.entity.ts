@@ -1,6 +1,8 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Building } from "@prisma/client";
-import { plainToInstance } from "class-transformer";
+import { plainToInstance, Type } from "class-transformer";
+
+import { SchoolEntity } from "@resources/schools/entities/school.entity";
 
 @ApiSchema({
 	description: "A building object",
@@ -29,6 +31,12 @@ export class BuildingEntity implements Building {
 	 * @example "550e8400-e29b-41d4-a716-446655440001"
 	 */
 	schoolId: string;
+
+	/**
+	 * The building's populated school
+	 */
+	@Type(() => SchoolEntity)
+	school?: SchoolEntity;
 
 	/**
 	 * The date the building was created

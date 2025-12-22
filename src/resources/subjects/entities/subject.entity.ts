@@ -1,6 +1,9 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Subject } from "@prisma/client";
-import { plainToInstance } from "class-transformer";
+import { plainToInstance, Type } from "class-transformer";
+
+import { SchoolEntity } from "@resources/schools/entities/school.entity";
+import { TeacherEntity } from "@resources/teachers/entities/teacher.entity";
 
 @ApiSchema({
 	description: "A subject object",
@@ -31,10 +34,22 @@ export class SubjectEntity implements Subject {
 	schoolId: string;
 
 	/**
+	 * The subject's populated school
+	 */
+	@Type(() => SchoolEntity)
+	school?: SchoolEntity;
+
+	/**
 	 * The subject's teacher identifiers
 	 * @example ["550e8400-e29b-41d4-a716-446655440000", "660e8400-e29b-41d4-a716-446655440000"]
 	 */
-	teacherIds: string[] = [];
+	teacherIds?: string[] = [];
+
+	/**
+	 * The subject's populated teachers
+	 */
+	@Type(() => TeacherEntity)
+	teachers?: TeacherEntity[] = [];
 
 	/**
 	 * The subject's creation date

@@ -1,6 +1,9 @@
 import { ApiSchema } from "@nestjs/swagger";
 import { Student } from "@prisma/client";
-import { plainToInstance } from "class-transformer";
+import { plainToInstance, Type } from "class-transformer";
+
+import { ClassEntity } from "@resources/classes/entities/class.entity";
+import { UserEntity } from "@resources/users/entities/user.entity";
 
 @ApiSchema({
 	description: "A student object",
@@ -25,10 +28,22 @@ export class StudentEntity implements Student {
 	userId: string;
 
 	/**
+	 * The student's populated user
+	 */
+	@Type(() => UserEntity)
+	user?: UserEntity;
+
+	/**
 	 * The student's class identifier
 	 * @example "550e8400-e29b-41d4-a716-446655440002"
 	 */
 	classId: string;
+
+	/**
+	 * The student's populated class
+	 */
+	@Type(() => ClassEntity)
+	class?: ClassEntity;
 
 	/**
 	 * The time the student was created
