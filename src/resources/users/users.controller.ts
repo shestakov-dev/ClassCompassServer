@@ -11,6 +11,7 @@ import {
 
 import { KetoNamespace } from "@resources/ory/keto/definitions";
 
+import { IdentityId } from "@shared/decorators/identity-id.decorator";
 import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
 
 import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
@@ -52,6 +53,23 @@ export class UsersController {
 		const users = await this.usersService.findAllBySchool(schoolId);
 
 		return users.map(user => UserEntity.fromPlain(user));
+	}
+
+	/**
+	 * Get a user by their identity ID
+	 */
+	@Get("identity/:identityId")
+	@ApiGet({ type: UserEntity })
+	async findByIdentityId(
+		@Param("identityId", ParseUUIDPipe) identityId: string,
+		@IdentityId() callerIdentityId: string
+	) {
+		return UserEntity.fromPlain(
+			await this.usersService.findByIdentityId(
+				identityId,
+				callerIdentityId
+			)
+		);
 	}
 
 	/**

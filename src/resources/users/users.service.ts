@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import {
+	ForbiddenException,
+	forwardRef,
+	Inject,
+	Injectable,
+} from "@nestjs/common";
 
 import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
@@ -61,6 +66,27 @@ export class UsersService {
 		return this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
 		});
+	}
+
+	async findByIdentityId(identityId: string, callerIdentityId: string) {
+		const user = await this.prisma.client.user.findUniqueOrThrow({
+			where: { identityId },
+		});
+
+		const isAuthorized = await this.ketoService.checkPermission({
+			namespace: KetoNamespace.User,
+			object: user.id,
+			relation: "view",
+			subjectId: callerIdentityId,
+		});
+
+		if (!isAuthorized) {
+			throw new ForbiddenException(
+				"User does not have permission to view this user"
+			);
+		}
+
+		return user;
 	}
 
 	async update(id: string, updateUserDto: UpdateUserDto) {

@@ -36,8 +36,6 @@ export class OathkeeperStrategy extends PassportStrategy(
 	}
 
 	async validate(payload: any) {
-		console.log(payload);
-
 		if (!payload.sub) {
 			throw new UnauthorizedException("Invalid token: missing subject");
 		}
@@ -63,8 +61,6 @@ export class OathkeeperStrategy extends PassportStrategy(
 		const timeRemaining = expiresAt - now;
 
 		if (timeRemaining > 0 && timeRemaining < SESSION_REFRESH_WINDOW_MS) {
-			console.log("extending");
-
 			// We attempt to extend the session but don't block the request if it fails
 			try {
 				await this.kratosService.extendSession(session.id);

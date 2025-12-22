@@ -1,8 +1,10 @@
-import { ApiSchema } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { $Enums } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
 import {
 	IsBoolean,
 	IsDate,
+	IsEnum,
 	IsOptional,
 	IsUUID,
 	Validate,
@@ -59,6 +61,24 @@ export class FilterLessonsDto {
 	@Type(() => Date)
 	@Validate(IsAfterConstraint, ["from"])
 	to?: Date;
+
+	/**
+	 * The day of the week to filter lessons by
+	 * @example "tuesday"
+	 */
+	@IsOptional()
+	@IsEnum($Enums.Day)
+	@ApiProperty({ enum: $Enums.Day })
+	day?: $Enums.Day;
+
+	/**
+	 * The week parity to filter lessons by
+	 * @example "odd"
+	 */
+	@IsOptional()
+	@IsEnum($Enums.LessonWeek)
+	@ApiProperty({ enum: $Enums.LessonWeek })
+	week?: $Enums.LessonWeek;
 
 	/**
 	 * The class identifier to filter lessons by

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Day, LessonWeek, Prisma } from "@prisma/client";
 import { getDay, getISOWeek } from "date-fns";
 
@@ -80,24 +80,32 @@ export class LessonsService {
 			roomId,
 			teacherId,
 			ignoreWeek,
+			day,
+			week,
 		} = filters;
 
-		let referenceDate: Date;
-		let timeFilter: Prisma.LessonWhereInput;
+		let timeFilter: Prisma.LessonWhereInput = {};
+		let dayFilter: Day | undefined;
+		let weekFilter: LessonWeek | undefined;
 
 		if (from && to) {
-			referenceDate = from;
+			const referenceDate = from;
 
 			const normalizedFrom = normalizeDate(from);
-
 			const normalizedTo = normalizeDate(to);
 
 			timeFilter = {
 				startTime: { lte: normalizedTo },
 				endTime: { gte: normalizedFrom },
 			};
+
+			const dayIndex = getDay(referenceDate);
+			dayFilter = this.DAY_MAPPING[dayIndex];
+
+			const isoWeek = getISOWeek(referenceDate);
+			weekFilter = isoWeek % 2 === 0 ? LessonWeek.even : LessonWeek.odd;
 		} else if (timestamp) {
-			referenceDate = timestamp;
+			const referenceDate = timestamp;
 
 			const normalizedTime = normalizeDate(timestamp);
 
@@ -105,19 +113,16 @@ export class LessonsService {
 				startTime: { lte: normalizedTime },
 				endTime: { gte: normalizedTime },
 			};
+
+			const dayIndex = getDay(referenceDate);
+			dayFilter = this.DAY_MAPPING[dayIndex];
+
+			const isoWeek = getISOWeek(referenceDate);
+			weekFilter = isoWeek % 2 === 0 ? LessonWeek.even : LessonWeek.odd;
 		} else {
-			throw new BadRequestException(
-				`Either "timestamp" or both "from" and "to" must be provided`
-			);
+			dayFilter = day;
+			weekFilter = week;
 		}
-
-		// Calculate day & week using the provided timestamp
-		const dayIndex = getDay(referenceDate);
-		const currentDay = this.DAY_MAPPING[dayIndex];
-
-		const isoWeek = getISOWeek(referenceDate);
-		const currentWeek =
-			isoWeek % 2 === 0 ? LessonWeek.even : LessonWeek.odd;
 
 		const where: Prisma.LessonWhereInput = {
 			subjectId,
@@ -129,15 +134,16 @@ export class LessonsService {
 
 			// The lesson must be scheduled for the current week
 			// or every week unless ignoreWeek is true
-			lessonWeek: ignoreWeek
-				? undefined
-				: { in: [currentWeek, LessonWeek.every] },
+			lessonWeek:
+				ignoreWeek || !weekFilter
+					? undefined
+					: { in: [weekFilter, LessonWeek.every] },
 
 			// Only get lessons for the current day
 			// and for classes in the specified school
 			dailySchedule: {
 				is: {
-					day: currentDay,
+					day: dayFilter,
 					classId,
 					class: {
 						schoolId,
