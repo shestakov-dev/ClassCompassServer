@@ -59,18 +59,30 @@ export class UsersService {
 
 		return this.prisma.client.user.findMany({
 			where: { schoolId },
+			include: {
+				student: true,
+				teacher: true,
+			},
 		});
 	}
 
 	findOne(id: string) {
 		return this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
+			include: {
+				student: true,
+				teacher: true,
+			},
 		});
 	}
 
 	async findByIdentityId(identityId: string, callerIdentityId: string) {
 		const user = await this.prisma.client.user.findUniqueOrThrow({
 			where: { identityId },
+			include: {
+				student: true,
+				teacher: true,
+			},
 		});
 
 		const isAuthorized = await this.ketoService.checkPermission({

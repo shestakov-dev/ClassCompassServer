@@ -3,6 +3,7 @@ import { Floor } from "@prisma/client";
 import { plainToInstance, Type } from "class-transformer";
 
 import { BuildingEntity } from "@resources/buildings/entities/building.entity";
+import { RoomEntity } from "@resources/rooms/entities/room.entity";
 
 @ApiSchema({
 	description: "A floor object",
@@ -43,6 +44,12 @@ export class FloorEntity implements Floor {
 	 */
 	@Type(() => BuildingEntity)
 	building?: BuildingEntity;
+
+	/**
+	 * The floor's populated rooms
+	 */
+	@Type(() => RoomEntity)
+	rooms?: RoomEntity[];
 
 	/**
 	 * The time the floor was created

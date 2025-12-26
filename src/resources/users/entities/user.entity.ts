@@ -3,6 +3,8 @@ import { User } from "@prisma/client";
 import { Exclude, plainToInstance, Type } from "class-transformer";
 
 import { SchoolEntity } from "@resources/schools/entities/school.entity";
+import { StudentEntity } from "@resources/students/entities/student.entity";
+import { TeacherEntity } from "@resources/teachers/entities/teacher.entity";
 
 @ApiSchema({
 	description: "A user object",
@@ -56,6 +58,18 @@ export class UserEntity implements User {
 	 */
 	@Type(() => SchoolEntity)
 	school?: SchoolEntity;
+
+	/**
+	 * The user's populated student record
+	 */
+	@Type(() => StudentEntity)
+	student?: StudentEntity | null;
+
+	/**
+	 * The user's populated teacher record
+	 */
+	@Type(() => TeacherEntity)
+	teacher?: TeacherEntity | null;
 
 	/**
 	 * The time the user was created

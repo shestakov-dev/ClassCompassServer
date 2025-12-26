@@ -35,12 +35,26 @@ export class BuildingsService {
 
 		return this.prisma.client.building.findMany({
 			where: { schoolId },
+			include: {
+				floors: {
+					include: {
+						rooms: true,
+					},
+				},
+			},
 		});
 	}
 
 	findOne(id: string) {
 		return this.prisma.client.building.findUniqueOrThrow({
 			where: { id },
+			include: {
+				floors: {
+					include: {
+						rooms: true,
+					},
+				},
+			},
 		});
 	}
 
