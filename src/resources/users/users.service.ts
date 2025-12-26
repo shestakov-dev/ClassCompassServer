@@ -40,6 +40,10 @@ export class UsersService {
 				...createUserDto,
 				identityId: kratosIdentity.id,
 			},
+			include: {
+				student: true,
+				teacher: true,
+			},
 		});
 
 		// Add parent school relationship
@@ -109,6 +113,10 @@ export class UsersService {
 		const updatedUser = await this.prisma.client.user.update({
 			where: { id },
 			data: updateUserDto,
+			include: {
+				student: true,
+				teacher: true,
+			},
 		});
 
 		await this.kratosService.updateIdentity(updatedUser.identityId, {
@@ -123,6 +131,10 @@ export class UsersService {
 	async remove(id: string) {
 		const removedUser = await this.prisma.client.user.softDelete({
 			where: { id },
+			include: {
+				student: true,
+				teacher: true,
+			},
 		});
 
 		// Remove parent school relationship
@@ -140,12 +152,6 @@ export class UsersService {
 		);
 
 		return removedUser;
-	}
-
-	findOneByEmail(email: string) {
-		return this.prisma.client.user.findUniqueOrThrow({
-			where: { email },
-		});
 	}
 
 	async ensureExists(id: string) {

@@ -32,7 +32,7 @@ export class RoomsController {
 	@Post()
 	@ApiPost({ type: RoomEntity })
 	@KetoPermission<CreateRoomDto>({
-		namespace: KetoNamespace.Building,
+		namespace: KetoNamespace.Floor,
 		relation: "manage",
 		source: "body",
 		key: "floorId",

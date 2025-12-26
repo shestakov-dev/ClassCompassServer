@@ -28,7 +28,7 @@ export class TeachersService {
 			);
 		}
 
-		const teacher = await this.prisma.client.teacher.create({
+		return this.prisma.client.teacher.create({
 			data: {
 				// remove subjectIds from the dto to avoid unknown field error
 				...{ ...createTeacherDto, subjectIds: undefined },
@@ -38,15 +38,10 @@ export class TeachersService {
 				},
 			},
 			include: {
-				subjects: { select: { id: true }, where: { deleted: false } },
+				subjects: { where: { deleted: false } },
+				user: true,
 			},
 		});
-
-		return {
-			...teacher,
-			subjects: undefined,
-			subjectIds: teacher.subjects.map(subject => subject.id),
-		};
 	}
 
 	async findAllBySchool(schoolId: string) {
@@ -54,22 +49,21 @@ export class TeachersService {
 
 		return this.prisma.client.teacher.findMany({
 			where: { user: { schoolId } },
+			include: {
+				subjects: { where: { deleted: false } },
+				user: true,
+			},
 		});
 	}
 
 	async findOne(id: string) {
-		const teacher = await this.prisma.client.teacher.findUniqueOrThrow({
+		return this.prisma.client.teacher.findUniqueOrThrow({
 			where: { id },
 			include: {
-				subjects: { select: { id: true }, where: { deleted: false } },
+				subjects: { where: { deleted: false } },
+				user: true,
 			},
 		});
-
-		return {
-			...teacher,
-			subjects: undefined,
-			subjectIds: teacher.subjects.map(subject => subject.id),
-		};
 	}
 
 	async update(id: string, updateTeacherDto: UpdateTeacherDto) {
@@ -83,7 +77,7 @@ export class TeachersService {
 			);
 		}
 
-		const teacher = await this.prisma.client.teacher.update({
+		return this.prisma.client.teacher.update({
 			where: { id },
 			data: {
 				// remove subjectIds from the dto to avoid unknown field error
@@ -97,20 +91,19 @@ export class TeachersService {
 					: undefined,
 			},
 			include: {
-				subjects: { select: { id: true }, where: { deleted: false } },
+				subjects: { where: { deleted: false } },
+				user: true,
 			},
 		});
-
-		return {
-			...teacher,
-			subjects: undefined,
-			subjectIds: teacher.subjects.map(subject => subject.id),
-		};
 	}
 
 	remove(id: string) {
 		return this.prisma.client.teacher.softDelete({
 			where: { id },
+			include: {
+				subjects: { where: { deleted: false } },
+				user: true,
+			},
 		});
 	}
 

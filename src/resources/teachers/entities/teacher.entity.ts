@@ -34,16 +34,10 @@ export class TeacherEntity implements Teacher {
 	user?: UserEntity;
 
 	/**
-	 * The teacher's subject identifiers
-	 * @example ["550e8400-e29b-41d4-a716-446655440000", "660e8400-e29b-41d4-a716-446655440000"]
-	 */
-	subjectIds?: string[] = [];
-
-	/**
 	 * The teacher's populated subjects
 	 */
 	@Type(() => SubjectEntity)
-	subjects?: SubjectEntity[] = [];
+	subjects?: SubjectEntity[];
 
 	/**
 	 * The time the teacher was created

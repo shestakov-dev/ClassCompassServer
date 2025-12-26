@@ -39,50 +39,34 @@ export class SubjectsService {
 				},
 			},
 			include: {
-				teachers: { select: { id: true }, where: { deleted: false } },
+				teachers: { where: { deleted: false } },
 			},
 		});
 
 		// Add parent school relationship
 		await this.addParentSchool(subject.id, createSubjectDto.schoolId);
 
-		return {
-			...subject,
-			teachers: undefined,
-			teacherIds: subject.teachers.map(teacher => teacher.id),
-		};
+		return subject;
 	}
 
 	async findAllBySchool(schoolId: string) {
 		await this.schoolsService.ensureExists(schoolId);
 
-		const subjects = await this.prisma.client.subject.findMany({
+		return this.prisma.client.subject.findMany({
 			where: { schoolId },
 			include: {
-				teachers: { select: { id: true }, where: { deleted: false } },
+				teachers: { where: { deleted: false } },
 			},
 		});
-
-		return subjects.map(subject => ({
-			...subject,
-			teachers: undefined,
-			teacherIds: subject.teachers.map(teacher => teacher.id),
-		}));
 	}
 
 	async findOne(id: string) {
-		const subject = await this.prisma.client.subject.findUniqueOrThrow({
+		return this.prisma.client.subject.findUniqueOrThrow({
 			where: { id },
 			include: {
-				teachers: { select: { id: true }, where: { deleted: false } },
+				teachers: { where: { deleted: false } },
 			},
 		});
-
-		return {
-			...subject,
-			teachers: undefined,
-			teacherIds: subject.teachers.map(teacher => teacher.id),
-		};
 	}
 
 	async update(id: string, updateSubjectDto: UpdateSubjectDto) {
@@ -96,7 +80,7 @@ export class SubjectsService {
 			);
 		}
 
-		const subject = await this.prisma.client.subject.update({
+		return this.prisma.client.subject.update({
 			where: { id },
 			data: {
 				// remove teacherIds from the dto to avoid unknown field error
@@ -110,20 +94,17 @@ export class SubjectsService {
 					: undefined,
 			},
 			include: {
-				teachers: { select: { id: true }, where: { deleted: false } },
+				teachers: { where: { deleted: false } },
 			},
 		});
-
-		return {
-			...subject,
-			teachers: undefined,
-			teacherIds: subject.teachers.map(teacher => teacher.id),
-		};
 	}
 
 	async remove(id: string) {
 		const newSubject = await this.prisma.client.subject.softDelete({
 			where: { id },
+			include: {
+				teachers: { where: { deleted: false } },
+			},
 		});
 
 		// Remove parent school relationship

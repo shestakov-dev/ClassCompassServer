@@ -22,6 +22,13 @@ export class BuildingsService {
 
 		const newBuilding = await this.prisma.client.building.create({
 			data: createBuildingDto,
+			include: {
+				floors: {
+					include: {
+						rooms: true,
+					},
+				},
+			},
 		});
 
 		// Add parent school relationship
@@ -66,12 +73,26 @@ export class BuildingsService {
 		return this.prisma.client.building.update({
 			where: { id },
 			data: updateBuildingDto,
+			include: {
+				floors: {
+					include: {
+						rooms: true,
+					},
+				},
+			},
 		});
 	}
 
 	async remove(id: string) {
 		const removedBuilding = await this.prisma.client.building.softDelete({
 			where: { id },
+			include: {
+				floors: {
+					include: {
+						rooms: true,
+					},
+				},
+			},
 		});
 
 		// Remove parent school relationship
