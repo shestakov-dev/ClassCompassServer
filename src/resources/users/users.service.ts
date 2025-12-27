@@ -50,10 +50,7 @@ export class UsersService {
 		await this.addParentSchool(newUser.id, createUserDto.schoolId);
 
 		// Add the user as a member of the school
-		await this.schoolsService.addMember(
-			createUserDto.schoolId,
-			kratosIdentity.id
-		);
+		await this.addMemberToSchool(createUserDto.schoolId, kratosIdentity.id);
 
 		return newUser;
 	}
@@ -141,12 +138,12 @@ export class UsersService {
 		await this.removeParentSchool(removedUser.id, removedUser.schoolId);
 
 		// Remove the user from the school members/admins
-		await this.schoolsService.removeMember(
+		await this.removeMemberFromSchool(
 			removedUser.schoolId,
 			removedUser.identityId
 		);
 
-		await this.schoolsService.removeAdmin(
+		await this.removeAdminFromSchool(
 			removedUser.schoolId,
 			removedUser.identityId
 		);
@@ -172,5 +169,32 @@ export class UsersService {
 			userId,
 			schoolId
 		);
+	}
+
+	private async addMemberToSchool(schoolId: string, identityId: string) {
+		await this.ketoService.createRelationship({
+			namespace: KetoNamespace.School,
+			object: schoolId,
+			relation: "members",
+			subjectId: identityId,
+		});
+	}
+
+	private async removeMemberFromSchool(schoolId: string, identityId: string) {
+		await this.ketoService.deleteRelationship({
+			namespace: KetoNamespace.School,
+			object: schoolId,
+			relation: "members",
+			subjectId: identityId,
+		});
+	}
+
+	private async removeAdminFromSchool(schoolId: string, identityId: string) {
+		await this.ketoService.deleteRelationship({
+			namespace: KetoNamespace.School,
+			object: schoolId,
+			relation: "admins",
+			subjectId: identityId,
+		});
 	}
 }

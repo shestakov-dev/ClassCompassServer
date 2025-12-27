@@ -78,8 +78,20 @@ export class SchoolsService {
 			);
 		}
 
-		await this.removeMember(schoolId, identityId);
-		await this.addAdmin(schoolId, identityId);
+		await this.ketoService.replaceRelationship(
+			{
+				namespace: KetoNamespace.School,
+				object: schoolId,
+				relation: "members",
+				subjectId: identityId,
+			},
+			{
+				namespace: KetoNamespace.School,
+				object: schoolId,
+				relation: "admins",
+				subjectId: identityId,
+			}
+		);
 	}
 
 	async demoteFromAdmin(schoolId: string, userId: string) {
@@ -92,48 +104,35 @@ export class SchoolsService {
 			);
 		}
 
-		await this.removeAdmin(schoolId, identityId);
-		await this.addMember(schoolId, identityId);
+		await this.ketoService.replaceRelationship(
+			{
+				namespace: KetoNamespace.School,
+				object: schoolId,
+				relation: "admins",
+				subjectId: identityId,
+			},
+			{
+				namespace: KetoNamespace.School,
+				object: schoolId,
+				relation: "members",
+				subjectId: identityId,
+			}
+		);
+	}
+
+	async isAdmin(schoolId: string, userId: string) {
+		const { identityId } = await this.usersService.findOne(userId);
+
+		return this.ketoService.checkPermission({
+			namespace: KetoNamespace.School,
+			object: schoolId,
+			relation: "admins",
+			subjectId: identityId,
+		});
 	}
 
 	async ensureExists(id: string) {
 		await this.prisma.client.school.ensureExists(id);
-	}
-
-	async addMember(schoolId: string, identityId: string) {
-		await this.ketoService.createRelationship({
-			namespace: KetoNamespace.School,
-			object: schoolId,
-			relation: "members",
-			subjectId: identityId,
-		});
-	}
-
-	async removeMember(schoolId: string, identityId: string) {
-		await this.ketoService.deleteRelationship({
-			namespace: KetoNamespace.School,
-			object: schoolId,
-			relation: "members",
-			subjectId: identityId,
-		});
-	}
-
-	async addAdmin(schoolId: string, identityId: string) {
-		await this.ketoService.createRelationship({
-			namespace: KetoNamespace.School,
-			object: schoolId,
-			relation: "admins",
-			subjectId: identityId,
-		});
-	}
-
-	async removeAdmin(schoolId: string, identityId: string) {
-		await this.ketoService.deleteRelationship({
-			namespace: KetoNamespace.School,
-			object: schoolId,
-			relation: "admins",
-			subjectId: identityId,
-		});
 	}
 
 	private async addParentPlatform(schoolId: string, platformId: string) {

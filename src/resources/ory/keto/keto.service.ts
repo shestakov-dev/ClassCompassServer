@@ -43,8 +43,13 @@ export class KetoService {
 		try {
 			const relationship = this.mapTupleToRelationship(tuple);
 
-			await this.relationApi.createRelationship({
-				createRelationshipBody: relationship,
+			await this.relationApi.patchRelationships({
+				relationshipPatch: [
+					{
+						action: "insert",
+						relation_tuple: relationship,
+					},
+				],
 			});
 		} catch (error) {
 			this.handleKetoError(error, "create");
@@ -57,9 +62,41 @@ export class KetoService {
 		try {
 			const relationship = this.mapTupleToRelationship(tuple);
 
-			await this.relationApi.deleteRelationships(relationship);
+			await this.relationApi.patchRelationships({
+				relationshipPatch: [
+					{
+						action: "delete",
+						relation_tuple: relationship,
+					},
+				],
+			});
 		} catch (error) {
 			this.handleKetoError(error, "delete");
+		}
+	}
+
+	async replaceRelationship<N extends KetoNamespace>(
+		oldTuple: KetoWriteTuple<N>,
+		newTuple: KetoWriteTuple<N>
+	): Promise<void> {
+		try {
+			const oldRelationship = this.mapTupleToRelationship(oldTuple);
+			const newRelationship = this.mapTupleToRelationship(newTuple);
+
+			await this.relationApi.patchRelationships({
+				relationshipPatch: [
+					{
+						action: "delete",
+						relation_tuple: oldRelationship,
+					},
+					{
+						action: "insert",
+						relation_tuple: newRelationship,
+					},
+				],
+			});
+		} catch (error) {
+			this.handleKetoError(error, "replace");
 		}
 	}
 

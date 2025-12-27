@@ -87,6 +87,18 @@ export class SchoolsController {
 	}
 
 	/**
+	 * Check if a user is an admin in a school
+	 */
+	@Get(":id/admins/:userId")
+	@ApiGet({ type: Boolean })
+	async isAdmin(
+		@Param("id", ParseUUIDPipe) id: string,
+		@Param("userId", ParseUUIDPipe) userId: string
+	) {
+		return this.schoolsService.isAdmin(id, userId);
+	}
+
+	/**
 	 * Promote a member to admin in a school
 	 */
 	@Post(":id/admins/:userId")
