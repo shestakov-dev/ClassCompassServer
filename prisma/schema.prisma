@@ -197,7 +197,6 @@ model DailySchedule {
 
 model Lesson {
     id           String     @id @default(uuid())
-    lessonNumber Int
     startTime    DateTime
     endTime      DateTime
     lessonWeek   LessonWeek @default(every)
@@ -217,8 +216,6 @@ model Lesson {
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
 
-    // The lesson number should be unique within a daily schedule and week type
-    @@unique([lessonNumber, lessonWeek, dailyScheduleId])
     @@index([roomId])
     @@index([teacherId])
     @@index([subjectId])

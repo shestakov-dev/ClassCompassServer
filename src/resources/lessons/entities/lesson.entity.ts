@@ -24,12 +24,6 @@ export class LessonEntity implements Lesson {
 	id: string;
 
 	/**
-	 * The lesson's number in the daily schedule
-	 * @example 1
-	 */
-	lessonNumber: number;
-
-	/**
 	 * The lesson's start time
 	 * @example "2023-03-15T09:00:00Z"
 	 */
@@ -107,6 +101,4 @@ export class LessonEntity implements Lesson {
 	 * @example "2021-09-01T00:00:00.000Z"
 	 */
 	updatedAt: Date;
-
-
 }

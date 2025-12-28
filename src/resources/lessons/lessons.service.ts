@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { ConflictException, Injectable } from "@nestjs/common";
 import { Day, LessonWeek, Prisma } from "@prisma/client";
 import { getDay, getISOWeek } from "date-fns";
 
@@ -16,6 +16,7 @@ import { FilterLessonsDto } from "./dto/filter-lessons.dto";
 import { UpdateLessonDto } from "./dto/update-lesson.dto";
 
 import { normalizeDate } from "./utils/dates";
+import { getTimeFilter } from "./utils/time-filter";
 
 @Injectable()
 export class LessonsService {
@@ -47,7 +48,14 @@ export class LessonsService {
 			createLessonDto.dailyScheduleId
 		);
 
-		// TODO: Check for conflicts (e.g., same teacher or room at the same time)
+		await this.checkOverlap({
+			startTime: createLessonDto.startTime,
+			endTime: createLessonDto.endTime,
+			lessonWeek: createLessonDto.lessonWeek ?? LessonWeek.every,
+			roomId: createLessonDto.roomId,
+			teacherId: createLessonDto.teacherId,
+			dailyScheduleId: createLessonDto.dailyScheduleId,
+		});
 
 		const newLesson = await this.prisma.client.lesson.create({
 			data: createLessonDto,
@@ -114,10 +122,7 @@ export class LessonsService {
 			const normalizedFrom = normalizeDate(from);
 			const normalizedTo = normalizeDate(to);
 
-			timeFilter = {
-				startTime: { lte: normalizedTo },
-				endTime: { gte: normalizedFrom },
-			};
+			timeFilter = getTimeFilter(normalizedFrom, normalizedTo, true);
 
 			const dayIndex = getDay(referenceDate);
 			dayFilter = this.DAY_MAPPING[dayIndex];
@@ -129,10 +134,7 @@ export class LessonsService {
 
 			const normalizedTime = normalizeDate(timestamp);
 
-			timeFilter = {
-				startTime: { lte: normalizedTime },
-				endTime: { gte: normalizedTime },
-			};
+			timeFilter = getTimeFilter(normalizedTime, normalizedTime, true);
 
 			const dayIndex = getDay(referenceDate);
 			dayFilter = this.DAY_MAPPING[dayIndex];
@@ -203,26 +205,38 @@ export class LessonsService {
 		});
 	}
 
-	update(id: string, updateLessonDto: UpdateLessonDto) {
+	async update(id: string, updateLessonDto: UpdateLessonDto) {
 		if (updateLessonDto.roomId) {
-			this.roomsService.ensureExists(updateLessonDto.roomId);
+			await this.roomsService.ensureExists(updateLessonDto.roomId);
 		}
 
 		if (updateLessonDto.teacherId) {
-			this.teachersService.ensureExists(updateLessonDto.teacherId);
+			await this.teachersService.ensureExists(updateLessonDto.teacherId);
 		}
 
 		if (updateLessonDto.subjectId) {
-			this.subjectsService.ensureExists(updateLessonDto.subjectId);
+			await this.subjectsService.ensureExists(updateLessonDto.subjectId);
 		}
 
 		if (updateLessonDto.dailyScheduleId) {
-			this.dailySchedulesService.ensureExists(
+			await this.dailySchedulesService.ensureExists(
 				updateLessonDto.dailyScheduleId
 			);
 		}
 
-		// TODO: Check for conflicts (e.g., same teacher or room at the same time)
+		const existingLesson = await this.findOne(id);
+
+		await this.checkOverlap({
+			startTime: updateLessonDto.startTime ?? existingLesson.startTime,
+			endTime: updateLessonDto.endTime ?? existingLesson.endTime,
+			lessonWeek: updateLessonDto.lessonWeek ?? existingLesson.lessonWeek,
+			roomId: updateLessonDto.roomId ?? existingLesson.roomId,
+			teacherId: updateLessonDto.teacherId ?? existingLesson.teacherId,
+			dailyScheduleId:
+				updateLessonDto.dailyScheduleId ??
+				existingLesson.dailyScheduleId,
+			excludeLessonId: id,
+		});
 
 		return this.prisma.client.lesson.update({
 			where: { id },
@@ -284,5 +298,62 @@ export class LessonsService {
 			lessonId,
 			dailyScheduleId
 		);
+	}
+
+	private async checkOverlap({
+		startTime,
+		endTime,
+		lessonWeek,
+		roomId,
+		teacherId,
+		dailyScheduleId,
+		excludeLessonId,
+	}: {
+		startTime: Date;
+		endTime: Date;
+		lessonWeek: LessonWeek;
+		roomId: string;
+		teacherId: string;
+		dailyScheduleId: string;
+		excludeLessonId?: string;
+	}) {
+		// Get the day of the week for the schedule
+		const { day } =
+			await this.dailySchedulesService.findOne(dailyScheduleId);
+
+		// Determine weeks that could conflict
+		const conflictingWeeks: LessonWeek[] = [LessonWeek.every];
+
+		if (lessonWeek === LessonWeek.every) {
+			conflictingWeeks.push(LessonWeek.odd, LessonWeek.even);
+		} else {
+			conflictingWeeks.push(lessonWeek);
+		}
+
+		const conflictingLesson = await this.prisma.client.lesson.findFirst({
+			where: {
+				AND: [
+					{ id: { not: excludeLessonId } },
+					{
+						OR: [{ roomId }, { teacherId }, { dailyScheduleId }],
+					},
+					{
+						dailySchedule: {
+							day: day,
+						},
+					},
+					{
+						lessonWeek: { in: conflictingWeeks },
+					},
+					getTimeFilter(startTime, endTime),
+				],
+			},
+		});
+
+		if (conflictingLesson) {
+			throw new ConflictException(
+				"Lesson overlaps with an existing lesson for the same room, teacher, or class."
+			);
+		}
 	}
 }
