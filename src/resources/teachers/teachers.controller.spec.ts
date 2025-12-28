@@ -53,8 +53,6 @@ describe("TeachersController", () => {
 					userId: "user123",
 					createdAt: new Date(),
 					updatedAt: new Date(),
-					deleted: true,
-					deletedAt: new Date(),
 				})
 			),
 		};
@@ -157,8 +155,6 @@ describe("TeachersController", () => {
 				userId: "user123",
 				createdAt: expect.any(Date),
 				updatedAt: expect.any(Date),
-				deleted: true,
-				deletedAt: expect.any(Date),
 			});
 
 			expect(await controller.remove(id)).toEqual(expected);

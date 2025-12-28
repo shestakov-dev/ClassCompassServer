@@ -24,9 +24,8 @@ export class BuildingsService {
 			data: createBuildingDto,
 			include: {
 				floors: {
-					where: { deleted: false },
 					include: {
-						rooms: { where: { deleted: false } },
+						rooms: true,
 					},
 				},
 			},
@@ -45,9 +44,8 @@ export class BuildingsService {
 			where: { schoolId },
 			include: {
 				floors: {
-					where: { deleted: false },
 					include: {
-						rooms: { where: { deleted: false } },
+						rooms: true,
 					},
 				},
 			},
@@ -59,9 +57,8 @@ export class BuildingsService {
 			where: { id },
 			include: {
 				floors: {
-					where: { deleted: false },
 					include: {
-						rooms: { where: { deleted: false } },
+						rooms: true,
 					},
 				},
 			},
@@ -78,9 +75,8 @@ export class BuildingsService {
 			data: updateBuildingDto,
 			include: {
 				floors: {
-					where: { deleted: false },
 					include: {
-						rooms: { where: { deleted: false } },
+						rooms: true,
 					},
 				},
 			},
@@ -88,13 +84,12 @@ export class BuildingsService {
 	}
 
 	async remove(id: string) {
-		const removedBuilding = await this.prisma.client.building.softDelete({
+		const removedBuilding = await this.prisma.client.building.delete({
 			where: { id },
 			include: {
 				floors: {
-					where: { deleted: false },
 					include: {
-						rooms: { where: { deleted: false } },
+						rooms: true,
 					},
 				},
 			},

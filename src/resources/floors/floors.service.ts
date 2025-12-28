@@ -56,7 +56,7 @@ export class FloorsService {
 	}
 
 	async remove(id: string) {
-		const removedFloor = await this.prisma.client.floor.softDelete({
+		const removedFloor = await this.prisma.client.floor.delete({
 			where: { id },
 		});
 

@@ -55,7 +55,7 @@ export class StudentsService {
 	}
 
 	remove(id: string) {
-		return this.prisma.client.student.softDelete({
+		return this.prisma.client.student.delete({
 			where: { id },
 		});
 	}

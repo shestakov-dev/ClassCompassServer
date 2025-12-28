@@ -50,16 +50,4 @@ export class TeacherEntity implements Teacher {
 	 * @example "2021-09-01T00:00:00.000Z"
 	 */
 	updatedAt: Date;
-
-	/**
-	 * Whether the teacher has been deleted
-	 * @example false
-	 */
-	deleted: boolean = false;
-
-	/**
-	 * The time the teacher was deleted
-	 * @example "2021-09-01T00:00:00.000Z"
-	 */
-	deletedAt: Date | null = null;
 }

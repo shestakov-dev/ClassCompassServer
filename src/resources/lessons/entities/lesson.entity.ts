@@ -108,15 +108,5 @@ export class LessonEntity implements Lesson {
 	 */
 	updatedAt: Date;
 
-	/**
-	 * Whether the lesson has been deleted
-	 * @example false
-	 */
-	deleted: boolean = false;
 
-	/**
-	 * The time the lesson was deleted
-	 * @example "2021-09-01T00:00:00.000Z"
-	 */
-	deletedAt: Date | null = null;
 }

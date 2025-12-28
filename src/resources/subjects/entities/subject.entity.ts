@@ -56,16 +56,4 @@ export class SubjectEntity implements Subject {
 	 * @example "2023-01-01T00:00:00.000Z"
 	 */
 	updatedAt: Date;
-
-	/**
-	 * Whether the subject is deleted
-	 * @example false
-	 */
-	deleted: boolean = false;
-
-	/**
-	 * The subject's deletion date
-	 * @example "2023-01-01T00:00:00.000Z"
-	 */
-	deletedAt: Date | null = null;
 }

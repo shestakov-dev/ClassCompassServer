@@ -56,7 +56,7 @@ export class RoomsService {
 	}
 
 	async remove(id: string) {
-		const removedRoom = await this.prisma.client.room.softDelete({
+		const removedRoom = await this.prisma.client.room.delete({
 			where: { id },
 		});
 

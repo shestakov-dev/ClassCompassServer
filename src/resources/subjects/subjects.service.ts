@@ -39,7 +39,7 @@ export class SubjectsService {
 				},
 			},
 			include: {
-				teachers: { where: { deleted: false } },
+				teachers: true,
 			},
 		});
 
@@ -55,7 +55,7 @@ export class SubjectsService {
 		return this.prisma.client.subject.findMany({
 			where: { schoolId },
 			include: {
-				teachers: { where: { deleted: false } },
+				teachers: true,
 			},
 		});
 	}
@@ -64,7 +64,7 @@ export class SubjectsService {
 		return this.prisma.client.subject.findUniqueOrThrow({
 			where: { id },
 			include: {
-				teachers: { where: { deleted: false } },
+				teachers: true,
 			},
 		});
 	}
@@ -94,16 +94,16 @@ export class SubjectsService {
 					: undefined,
 			},
 			include: {
-				teachers: { where: { deleted: false } },
+				teachers: true,
 			},
 		});
 	}
 
 	async remove(id: string) {
-		const newSubject = await this.prisma.client.subject.softDelete({
+		const newSubject = await this.prisma.client.subject.delete({
 			where: { id },
 			include: {
-				teachers: { where: { deleted: false } },
+				teachers: true,
 			},
 		});
 

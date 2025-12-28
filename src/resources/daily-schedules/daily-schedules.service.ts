@@ -62,7 +62,7 @@ export class DailySchedulesService {
 
 	async remove(id: string) {
 		const removedDailySchedule =
-			await this.prisma.client.dailySchedule.softDelete({
+			await this.prisma.client.dailySchedule.delete({
 				where: { id },
 			});
 

@@ -56,7 +56,7 @@ export class ClassesService {
 	}
 
 	async remove(id: string) {
-		const removedClass = await this.prisma.client.class.softDelete({
+		const removedClass = await this.prisma.client.class.delete({
 			where: { id },
 		});
 

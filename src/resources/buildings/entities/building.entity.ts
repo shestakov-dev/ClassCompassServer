@@ -56,16 +56,4 @@ export class BuildingEntity implements Building {
 	 * @example "2023-01-01T00:00:00.000Z"
 	 */
 	updatedAt: Date;
-
-	/**
-	 * Whether the building is deleted
-	 * @example false
-	 */
-	deleted: boolean = false;
-
-	/**
-	 * The date the building was deleted
-	 * @example "2023-01-01T00:00:00.000Z"
-	 */
-	deletedAt: Date | null = null;
 }

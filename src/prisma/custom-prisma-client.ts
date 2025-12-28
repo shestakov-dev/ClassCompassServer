@@ -1,16 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
-import {
-	ensureExists,
-	filterSoftDeleted,
-	softDelete,
-} from "./prisma.extension";
+import { ensureExists } from "./prisma.extension";
 
 export function customPrismaClient(prismaClient: PrismaClient) {
-	return prismaClient
-		.$extends(softDelete)
-		.$extends(filterSoftDeleted)
-		.$extends(ensureExists);
+	return prismaClient.$extends(ensureExists);
 }
 
 export type CustomPrismaClient = ReturnType<typeof customPrismaClient>;

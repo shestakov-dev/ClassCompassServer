@@ -39,8 +39,6 @@ model User {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     @@index([schoolId])
 }
@@ -59,8 +57,6 @@ model School {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 }
 
 model Building {
@@ -74,8 +70,6 @@ model Building {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     // The building name should be unique within a school
     @@unique([schoolId, name])
@@ -94,8 +88,6 @@ model Floor {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     // The floor number should be unique within a building
     @@unique([buildingId, number])
@@ -113,8 +105,6 @@ model Room {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     // The room name should be unique within a floor
     @@unique([floorId, name])
@@ -133,8 +123,6 @@ model Teacher {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 }
 
 model Subject {
@@ -150,8 +138,6 @@ model Subject {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     // The subject name should be unique within a school
     @@unique([schoolId, name])
@@ -171,8 +157,6 @@ model Class {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     // The class name should be unique within a school
     @@unique([schoolId, name])
@@ -190,8 +174,6 @@ model Student {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     @@index([classId])
 }
@@ -207,8 +189,6 @@ model DailySchedule {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     @@unique([classId, day])
     @@index([classId])
@@ -236,8 +216,6 @@ model Lesson {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-    deleted   Boolean   @default(false)
-    deletedAt DateTime?
 
     // The lesson number should be unique within a daily schedule and week type
     @@unique([lessonNumber, lessonWeek, dailyScheduleId])

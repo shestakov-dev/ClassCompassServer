@@ -34,16 +34,4 @@ export class SchoolEntity implements School {
 	 * @example "2021-09-01T00:00:00.000Z"
 	 */
 	updatedAt: Date;
-
-	/**
-	 * Whether the school has been deleted
-	 * @example false
-	 */
-	deleted: boolean = false;
-
-	/**
-	 * The time the school was deleted
-	 * @example "2021-09-01T00:00:00.000Z"
-	 */
-	deletedAt: Date | null = null;
 }

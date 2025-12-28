@@ -38,7 +38,7 @@ export class TeachersService {
 				},
 			},
 			include: {
-				subjects: { where: { deleted: false } },
+				subjects: true,
 				user: true,
 			},
 		});
@@ -50,7 +50,7 @@ export class TeachersService {
 		return this.prisma.client.teacher.findMany({
 			where: { user: { schoolId } },
 			include: {
-				subjects: { where: { deleted: false } },
+				subjects: true,
 				user: true,
 			},
 		});
@@ -60,7 +60,7 @@ export class TeachersService {
 		return this.prisma.client.teacher.findUniqueOrThrow({
 			where: { id },
 			include: {
-				subjects: { where: { deleted: false } },
+				subjects: true,
 				user: true,
 			},
 		});
@@ -91,17 +91,17 @@ export class TeachersService {
 					: undefined,
 			},
 			include: {
-				subjects: { where: { deleted: false } },
+				subjects: true,
 				user: true,
 			},
 		});
 	}
 
 	remove(id: string) {
-		return this.prisma.client.teacher.softDelete({
+		return this.prisma.client.teacher.delete({
 			where: { id },
 			include: {
-				subjects: { where: { deleted: false } },
+				subjects: true,
 				user: true,
 			},
 		});

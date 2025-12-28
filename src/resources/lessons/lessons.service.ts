@@ -241,7 +241,7 @@ export class LessonsService {
 	}
 
 	async remove(id: string) {
-		const removedLesson = await this.prisma.client.lesson.softDelete({
+		const removedLesson = await this.prisma.client.lesson.delete({
 			where: { id },
 			include: {
 				room: true,

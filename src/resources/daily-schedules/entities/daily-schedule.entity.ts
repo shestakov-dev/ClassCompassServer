@@ -50,16 +50,4 @@ export class DailyScheduleEntity implements DailySchedule {
 	 * @example "2021-09-01T00:00:00.000Z"
 	 */
 	updatedAt: Date;
-
-	/**
-	 * Whether the daily schedule has been deleted
-	 * @example false
-	 */
-	deleted: boolean = false;
-
-	/**
-	 * The time the daily schedule was deleted
-	 * @example "2021-09-01T00:00:00.000Z"
-	 */
-	deletedAt: Date | null = null;
 }
