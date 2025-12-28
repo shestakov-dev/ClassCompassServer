@@ -41,8 +41,8 @@ export class UsersService {
 				identityId: kratosIdentity.id,
 			},
 			include: {
-				student: true,
-				teacher: true,
+				student: { where: { deleted: false } },
+				teacher: { where: { deleted: false } },
 			},
 		});
 
@@ -61,8 +61,8 @@ export class UsersService {
 		return this.prisma.client.user.findMany({
 			where: { schoolId },
 			include: {
-				student: true,
-				teacher: true,
+				student: { where: { deleted: false } },
+				teacher: { where: { deleted: false } },
 			},
 		});
 	}
@@ -71,8 +71,8 @@ export class UsersService {
 		return this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
 			include: {
-				student: true,
-				teacher: true,
+				student: { where: { deleted: false } },
+				teacher: { where: { deleted: false } },
 			},
 		});
 	}
@@ -81,8 +81,8 @@ export class UsersService {
 		const user = await this.prisma.client.user.findUniqueOrThrow({
 			where: { identityId },
 			include: {
-				student: true,
-				teacher: true,
+				student: { where: { deleted: false } },
+				teacher: { where: { deleted: false } },
 			},
 		});
 
@@ -111,8 +111,8 @@ export class UsersService {
 			where: { id },
 			data: updateUserDto,
 			include: {
-				student: true,
-				teacher: true,
+				student: { where: { deleted: false } },
+				teacher: { where: { deleted: false } },
 			},
 		});
 
@@ -129,8 +129,8 @@ export class UsersService {
 		const removedUser = await this.prisma.client.user.softDelete({
 			where: { id },
 			include: {
-				student: true,
-				teacher: true,
+				student: { where: { deleted: false } },
+				teacher: { where: { deleted: false } },
 			},
 		});
 

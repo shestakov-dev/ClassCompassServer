@@ -24,8 +24,9 @@ export class BuildingsService {
 			data: createBuildingDto,
 			include: {
 				floors: {
+					where: { deleted: false },
 					include: {
-						rooms: true,
+						rooms: { where: { deleted: false } },
 					},
 				},
 			},
@@ -44,8 +45,9 @@ export class BuildingsService {
 			where: { schoolId },
 			include: {
 				floors: {
+					where: { deleted: false },
 					include: {
-						rooms: true,
+						rooms: { where: { deleted: false } },
 					},
 				},
 			},
@@ -57,8 +59,9 @@ export class BuildingsService {
 			where: { id },
 			include: {
 				floors: {
+					where: { deleted: false },
 					include: {
-						rooms: true,
+						rooms: { where: { deleted: false } },
 					},
 				},
 			},
@@ -75,8 +78,9 @@ export class BuildingsService {
 			data: updateBuildingDto,
 			include: {
 				floors: {
+					where: { deleted: false },
 					include: {
-						rooms: true,
+						rooms: { where: { deleted: false } },
 					},
 				},
 			},
@@ -88,8 +92,9 @@ export class BuildingsService {
 			where: { id },
 			include: {
 				floors: {
+					where: { deleted: false },
 					include: {
-						rooms: true,
+						rooms: { where: { deleted: false } },
 					},
 				},
 			},
