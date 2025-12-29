@@ -1,5 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+import { KetoService } from "@resources/ory/keto/keto.service";
 import { SchoolsService } from "@resources/schools/schools.service";
 import { SubjectsService } from "@resources/subjects/subjects.service";
 import { UsersService } from "@resources/users/users.service";
@@ -16,7 +18,8 @@ export class TeachersService {
 		private readonly usersService: UsersService,
 		@Inject(forwardRef(() => SubjectsService))
 		private readonly subjectsService: SubjectsService,
-		private readonly schoolsService: SchoolsService
+		private readonly schoolsService: SchoolsService,
+		private readonly ketoService: KetoService
 	) {}
 
 	async create(createTeacherDto: CreateTeacherDto) {
@@ -28,7 +31,7 @@ export class TeachersService {
 			);
 		}
 
-		return this.prisma.client.teacher.create({
+		const teacher = await this.prisma.client.teacher.create({
 			data: {
 				// remove subjectIds from the dto to avoid unknown field error
 				...{ ...createTeacherDto, subjectIds: undefined },
@@ -42,6 +45,10 @@ export class TeachersService {
 				user: true,
 			},
 		});
+
+		await this.addParentUser(teacher.id, createTeacherDto.userId);
+
+		return teacher;
 	}
 
 	async findAllBySchool(schoolId: string) {
@@ -97,14 +104,18 @@ export class TeachersService {
 		});
 	}
 
-	remove(id: string) {
-		return this.prisma.client.teacher.delete({
+	async remove(id: string) {
+		const teacher = await this.prisma.client.teacher.delete({
 			where: { id },
 			include: {
 				subjects: true,
 				user: true,
 			},
 		});
+
+		await this.removeParentUser(teacher.id, teacher.userId);
+
+		return teacher;
 	}
 
 	async ensureExists(id: string) {
@@ -113,5 +124,21 @@ export class TeachersService {
 
 	async ensureExistsMany(ids: string[]) {
 		await this.prisma.client.teacher.ensureExistsMany(ids);
+	}
+
+	private async addParentUser(teacherId: string, userId: string) {
+		await this.ketoService.linkChild(
+			KetoNamespace.Teacher,
+			teacherId,
+			userId
+		);
+	}
+
+	private async removeParentUser(teacherId: string, userId: string) {
+		await this.ketoService.unlinkChild(
+			KetoNamespace.Teacher,
+			teacherId,
+			userId
+		);
 	}
 }

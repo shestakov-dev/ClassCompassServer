@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 
 import { ClassesService } from "@resources/classes/classes.service";
+import { KetoNamespace } from "@resources/ory/keto/definitions";
+import { KetoService } from "@resources/ory/keto/keto.service";
 import { UsersService } from "@resources/users/users.service";
 
 import { PrismaService } from "@prisma/prisma.service";
@@ -13,16 +15,21 @@ export class StudentsService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly usersService: UsersService,
-		private readonly classesService: ClassesService
+		private readonly classesService: ClassesService,
+		private readonly ketoService: KetoService
 	) {}
 
 	async create(createStudentDto: CreateStudentDto) {
 		await this.usersService.ensureExists(createStudentDto.userId);
 		await this.classesService.ensureExists(createStudentDto.classId);
 
-		return this.prisma.client.student.create({
+		const student = await this.prisma.client.student.create({
 			data: createStudentDto,
 		});
+
+		await this.addParentUser(student.id, createStudentDto.userId);
+
+		return student;
 	}
 
 	async findAllByClass(classId: string) {
@@ -54,9 +61,29 @@ export class StudentsService {
 		});
 	}
 
-	remove(id: string) {
-		return this.prisma.client.student.delete({
+	async remove(id: string) {
+		const student = await this.prisma.client.student.delete({
 			where: { id },
 		});
+
+		await this.removeParentUser(student.id, student.userId);
+
+		return student;
+	}
+
+	private async addParentUser(studentId: string, userId: string) {
+		await this.ketoService.linkChild(
+			KetoNamespace.Student,
+			studentId,
+			userId
+		);
+	}
+
+	private async removeParentUser(studentId: string, userId: string) {
+		await this.ketoService.unlinkChild(
+			KetoNamespace.Student,
+			studentId,
+			userId
+		);
 	}
 }

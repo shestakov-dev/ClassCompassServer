@@ -11,6 +11,8 @@ export enum KetoNamespace {
 	User = "User",
 	Class = "Class",
 
+	Teacher = "Teacher",
+	Student = "Student",
 	Floor = "Floor",
 	DailySchedule = "DailySchedule",
 
@@ -30,6 +32,8 @@ type KetoNamespaceRelations = {
 	[KetoNamespace.User]: "parentSchool";
 	[KetoNamespace.Class]: "parentSchool";
 
+	[KetoNamespace.Teacher]: "parentUser";
+	[KetoNamespace.Student]: "parentUser";
 	[KetoNamespace.Floor]: "parentBuilding";
 	[KetoNamespace.DailySchedule]: "parentClass";
 
@@ -49,6 +53,8 @@ type KetoNamespacePermissions = {
 	[KetoNamespace.User]: "manage" | "view";
 	[KetoNamespace.Class]: "manage" | "view";
 
+	[KetoNamespace.Teacher]: "manage" | "view";
+	[KetoNamespace.Student]: "manage" | "view";
 	[KetoNamespace.Floor]: "manage" | "view";
 	[KetoNamespace.DailySchedule]: "manage" | "view";
 
@@ -100,6 +106,14 @@ export const KetoHierarchy: {
 		parentRelation: "parentSchool",
 	},
 
+	[KetoNamespace.Teacher]: {
+		parentNamespace: KetoNamespace.User,
+		parentRelation: "parentUser",
+	},
+	[KetoNamespace.Student]: {
+		parentNamespace: KetoNamespace.User,
+		parentRelation: "parentUser",
+	},
 	[KetoNamespace.Floor]: {
 		parentNamespace: KetoNamespace.Building,
 		parentRelation: "parentBuilding",

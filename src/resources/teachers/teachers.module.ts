@@ -1,5 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 
+import { OryModule } from "@resources/ory/ory.module";
 import { SchoolsModule } from "@resources/schools/schools.module";
 import { SubjectsModule } from "@resources/subjects/subjects.module";
 import { UsersModule } from "@resources/users/users.module";
@@ -17,6 +18,7 @@ import { TeachersService } from "./teachers.service";
 		UsersModule,
 		forwardRef(() => SubjectsModule),
 		SchoolsModule,
+		OryModule,
 	],
 	exports: [TeachersService],
 })
