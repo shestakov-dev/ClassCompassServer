@@ -42,7 +42,7 @@ export class UsersService {
 			},
 			include: {
 				student: true,
-				teacher: true,
+				teacher: { include: { subjects: true } },
 			},
 		});
 
@@ -62,7 +62,7 @@ export class UsersService {
 			where: { schoolId },
 			include: {
 				student: true,
-				teacher: true,
+				teacher: { include: { subjects: true } },
 			},
 		});
 	}
@@ -76,7 +76,7 @@ export class UsersService {
 			},
 			include: {
 				student: true,
-				teacher: true,
+				teacher: { include: { subjects: true } },
 			},
 		});
 	}
@@ -86,7 +86,7 @@ export class UsersService {
 			where: { id },
 			include: {
 				student: true,
-				teacher: true,
+				teacher: { include: { subjects: true } },
 			},
 		});
 	}
@@ -96,7 +96,7 @@ export class UsersService {
 			where: { identityId },
 			include: {
 				student: true,
-				teacher: true,
+				teacher: { include: { subjects: true } },
 			},
 		});
 
@@ -126,7 +126,7 @@ export class UsersService {
 			data: updateUserDto,
 			include: {
 				student: true,
-				teacher: true,
+				teacher: { include: { subjects: true } },
 			},
 		});
 
@@ -144,7 +144,7 @@ export class UsersService {
 			where: { id },
 			include: {
 				student: true,
-				teacher: true,
+				teacher: { include: { subjects: true } },
 			},
 		});
 
