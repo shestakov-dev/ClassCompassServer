@@ -120,8 +120,15 @@ export class SchoolsService {
 		);
 	}
 
-	async isAdmin(schoolId: string, userId: string) {
-		const { identityId } = await this.usersService.findOne(userId);
+	async isAdmin(schoolId: string, userId: string): Promise<boolean> {
+		const { identityId, schoolId: userSchoolId } =
+			await this.usersService.findOne(userId);
+
+		if (userSchoolId !== schoolId) {
+			throw new ForbiddenException(
+				"User does not belong to the specified school"
+			);
+		}
 
 		return this.ketoService.checkPermission({
 			namespace: KetoNamespace.School,
@@ -129,6 +136,23 @@ export class SchoolsService {
 			relation: "admins",
 			subjectId: identityId,
 		});
+	}
+
+	async getAdmins(schoolId: string) {
+		await this.ensureExists(schoolId);
+
+		// Get all school admin relationships from Keto
+		const relationships = await this.ketoService.getRelationships({
+			namespace: KetoNamespace.School,
+			object: schoolId,
+			relation: "admins",
+		});
+
+		const identityIds = relationships
+			.map(relation => relation.subject_id)
+			.filter(subjectId => subjectId !== undefined);
+
+		return this.usersService.findAllByIdentityIds(identityIds);
 	}
 
 	async ensureExists(id: string) {

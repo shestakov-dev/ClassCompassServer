@@ -18,7 +18,8 @@ import {
 
 @Injectable()
 export class KetoService {
-	private readonly relationApi: RelationshipApi;
+	private readonly writeRelationApi: RelationshipApi;
+	private readonly readRelationApi: RelationshipApi;
 	private readonly permissionApi: PermissionApi;
 
 	constructor(private readonly configService: ConfigService) {
@@ -28,8 +29,12 @@ export class KetoService {
 		const ketoWriteUrl =
 			this.configService.getOrThrow<string>("KETO_WRITE_URL");
 
-		this.relationApi = new RelationshipApi(
+		this.writeRelationApi = new RelationshipApi(
 			new Configuration({ basePath: ketoWriteUrl })
+		);
+
+		this.readRelationApi = new RelationshipApi(
+			new Configuration({ basePath: ketoReadUrl })
 		);
 
 		this.permissionApi = new PermissionApi(
@@ -43,7 +48,7 @@ export class KetoService {
 		try {
 			const relationship = this.mapTupleToRelationship(tuple);
 
-			await this.relationApi.patchRelationships({
+			await this.writeRelationApi.patchRelationships({
 				relationshipPatch: [
 					{
 						action: "insert",
@@ -62,7 +67,7 @@ export class KetoService {
 		try {
 			const relationship = this.mapTupleToRelationship(tuple);
 
-			await this.relationApi.patchRelationships({
+			await this.writeRelationApi.patchRelationships({
 				relationshipPatch: [
 					{
 						action: "delete",
@@ -83,7 +88,7 @@ export class KetoService {
 			const oldRelationship = this.mapTupleToRelationship(oldTuple);
 			const newRelationship = this.mapTupleToRelationship(newTuple);
 
-			await this.relationApi.patchRelationships({
+			await this.writeRelationApi.patchRelationships({
 				relationshipPatch: [
 					{
 						action: "delete",
@@ -155,6 +160,23 @@ export class KetoService {
 		}
 	}
 
+	async getRelationships<N extends KetoNamespace>(
+		tuple: Partial<KetoCheckTuple<N>>
+	): Promise<Relationship[]> {
+		try {
+			console.log(tuple);
+
+			const response = await this.readRelationApi.getRelationships(tuple);
+
+			return response.data.relation_tuples ?? [];
+		} catch (error) {
+			this.handleKetoError(error, "get relationships");
+
+			// Unreachable due to throw, but satisfies TS
+			return [];
+		}
+	}
+
 	private mapTupleToRelationship<N extends KetoNamespace>(
 		tuple: KetoWriteTuple<N>
 	): Relationship {
@@ -182,10 +204,12 @@ export class KetoService {
 	}
 
 	private handleKetoError(error: unknown, action: string) {
+		console.log(error);
+
 		if (error instanceof AxiosError && error.response) {
 			console.error(
 				`Failed to ${action} Keto tuple:`,
-				error.response.data || error.message
+				error.response.data ?? error.message
 			);
 		} else if (error instanceof Error) {
 			console.error(

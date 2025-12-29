@@ -11,6 +11,8 @@ import {
 	Post,
 } from "@nestjs/common";
 
+import { UserEntity } from "@resources/users/entities/user.entity";
+
 import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateSchoolDto } from "./dto/create-school.dto";
@@ -49,9 +51,7 @@ export class SchoolsController {
 	async findAll() {
 		const schools = await this.schoolsService.findAll();
 
-		return Promise.all(
-			schools.map(school => SchoolEntity.fromPlain(school))
-		);
+		return schools.map(school => SchoolEntity.fromPlain(school));
 	}
 
 	/**
@@ -87,18 +87,6 @@ export class SchoolsController {
 	}
 
 	/**
-	 * Check if a user is an admin in a school
-	 */
-	@Get(":id/admins/:userId")
-	@ApiGet({ type: Boolean })
-	async isAdmin(
-		@Param("id", ParseUUIDPipe) id: string,
-		@Param("userId", ParseUUIDPipe) userId: string
-	) {
-		return this.schoolsService.isAdmin(id, userId);
-	}
-
-	/**
 	 * Promote a member to admin in a school
 	 */
 	@Post(":id/admins/:userId")
@@ -113,6 +101,29 @@ export class SchoolsController {
 		@Param("userId", ParseUUIDPipe) userId: string
 	) {
 		await this.schoolsService.promoteToAdmin(id, userId);
+	}
+
+	/**
+	 * Get all admins of a school
+	 */
+	@Get(":id/admins")
+	@ApiGet({ type: [UserEntity] })
+	async getAdmins(@Param("id", ParseUUIDPipe) id: string) {
+		const admins = await this.schoolsService.getAdmins(id);
+
+		return admins.map(admin => UserEntity.fromPlain(admin));
+	}
+
+	/**
+	 * Check if a user is an admin in a school
+	 */
+	@Get(":id/admins/:userId")
+	@ApiGet({ type: Boolean })
+	async isAdmin(
+		@Param("id", ParseUUIDPipe) id: string,
+		@Param("userId", ParseUUIDPipe) userId: string
+	) {
+		return this.schoolsService.isAdmin(id, userId);
 	}
 
 	/**

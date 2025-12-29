@@ -67,6 +67,20 @@ export class UsersService {
 		});
 	}
 
+	async findAllByIdentityIds(identityIds: string[]) {
+		return this.prisma.client.user.findMany({
+			where: {
+				identityId: {
+					in: identityIds,
+				},
+			},
+			include: {
+				student: true,
+				teacher: true,
+			},
+		});
+	}
+
 	findOne(id: string) {
 		return this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
