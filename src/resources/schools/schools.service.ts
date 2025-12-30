@@ -94,7 +94,11 @@ export class SchoolsService {
 		);
 	}
 
-	async demoteFromAdmin(schoolId: string, userId: string) {
+	async demoteFromAdmin(
+		schoolId: string,
+		userId: string,
+		callerIdentityId: string
+	) {
 		const { identityId, schoolId: userSchoolId } =
 			await this.usersService.findOne(userId);
 
@@ -102,6 +106,10 @@ export class SchoolsService {
 			throw new ForbiddenException(
 				"User does not belong to the specified school"
 			);
+		}
+
+		if (identityId === callerIdentityId) {
+			throw new ForbiddenException("You cannot demote yourself");
 		}
 
 		await this.ketoService.replaceRelationship(

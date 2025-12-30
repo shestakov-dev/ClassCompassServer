@@ -53,6 +53,10 @@ export class KratosService {
 		return response.data;
 	}
 
+	async deleteIdentity(identityId: string): Promise<void> {
+		await this.identityApi.deleteIdentity({ id: identityId });
+	}
+
 	async getSession(sessionCookie: string): Promise<Session> {
 		const response = await this.frontendApi.toSession({
 			cookie: sessionCookie,

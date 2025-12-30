@@ -148,6 +148,9 @@ export class UsersService {
 			},
 		});
 
+		// Remove the identity from Ory Kratos
+		await this.kratosService.deleteIdentity(removedUser.identityId);
+
 		// Remove parent school relationship
 		await this.removeParentSchool(removedUser.id, removedUser.schoolId);
 

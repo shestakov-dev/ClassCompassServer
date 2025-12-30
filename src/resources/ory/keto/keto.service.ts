@@ -164,8 +164,6 @@ export class KetoService {
 		tuple: Partial<KetoCheckTuple<N>>
 	): Promise<Relationship[]> {
 		try {
-			console.log(tuple);
-
 			const response = await this.readRelationApi.getRelationships(tuple);
 
 			return response.data.relation_tuples ?? [];
@@ -204,8 +202,6 @@ export class KetoService {
 	}
 
 	private handleKetoError(error: unknown, action: string) {
-		console.log(error);
-
 		if (error instanceof AxiosError && error.response) {
 			console.error(
 				`Failed to ${action} Keto tuple:`,

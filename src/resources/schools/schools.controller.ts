@@ -13,6 +13,8 @@ import {
 
 import { UserEntity } from "@resources/users/entities/user.entity";
 
+import { IdentityId } from "@shared/decorators/identity-id.decorator";
+
 import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
 import { CreateSchoolDto } from "./dto/create-school.dto";
@@ -134,8 +136,9 @@ export class SchoolsController {
 	@ApiDelete({ type: undefined, successResponse: HttpStatus.NO_CONTENT })
 	async demoteFromAdmin(
 		@Param("id", ParseUUIDPipe) id: string,
-		@Param("userId", ParseUUIDPipe) userId: string
+		@Param("userId", ParseUUIDPipe) userId: string,
+		@IdentityId() callerIdentityId: string
 	) {
-		await this.schoolsService.demoteFromAdmin(id, userId);
+		await this.schoolsService.demoteFromAdmin(id, userId, callerIdentityId);
 	}
 }
