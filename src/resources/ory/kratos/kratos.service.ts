@@ -29,11 +29,15 @@ export class KratosService {
 		);
 	}
 
-	async createIdentity(traits: Record<string, unknown>) {
+	async createIdentity(
+		traits: Record<string, unknown>,
+		publicMetadata?: Record<string, unknown>
+	) {
 		const response = await this.identityApi.createIdentity({
 			createIdentityBody: {
 				schema_id: "default",
 				traits,
+				metadata_public: publicMetadata,
 			},
 		});
 

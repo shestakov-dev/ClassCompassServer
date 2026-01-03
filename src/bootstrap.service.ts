@@ -49,11 +49,16 @@ export class BootstrapService implements OnApplicationBootstrap {
 		}
 
 		// Identity does not exist, continue to create it
-		const newIdentity = await this.kratosService.createIdentity({
-			email: adminEmail,
-			firstName: adminFirstName,
-			lastName: adminLastName,
-		});
+		const newIdentity = await this.kratosService.createIdentity(
+			{
+				email: adminEmail,
+				firstName: adminFirstName,
+				lastName: adminLastName,
+			},
+			{
+				accountType: "platform-admin",
+			}
+		);
 
 		// Give the platform admin privileges in Keto
 		await this.ketoService.createRelationship({
