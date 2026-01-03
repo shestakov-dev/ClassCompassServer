@@ -56,7 +56,7 @@ export class BootstrapService implements OnApplicationBootstrap {
 				lastName: adminLastName,
 			},
 			{
-				accountType: "platform-admin",
+				identityType: "platform-admin",
 			}
 		);
 
