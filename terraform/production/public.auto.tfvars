@@ -1,5 +1,0 @@
-subscription_id = "ba738c1f-d62f-4f21-949e-9ed354a454b5"
-app_name = "class-compass-server"
-location = "Italy North"
-container_name = "class-compass-server"
-image_name = "ghcr.io/shestakov-dev/class-compass-server-mini:latest"

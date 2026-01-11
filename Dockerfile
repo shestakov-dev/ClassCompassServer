@@ -1,32 +1,33 @@
-FROM node:lts-alpine AS builder
+FROM node:lts-alpine AS base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
 
 WORKDIR /app
-
-COPY package*.json .
-COPY pnpm-lock.yaml .
-
-RUN npm install -g pnpm
-RUN pnpm install
 
 COPY . .
 
+
+FROM base AS build
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
 # Generate the Prisma client and types
-RUN pnpx prisma generate
+RUN pnpx prisma@6.19.0 generate
 
 RUN pnpm run build
 
-FROM node:lts-alpine AS runner
+
+FROM base
 
 WORKDIR /app
 
-# Copy package.json and node_modules (includes @prisma/client)
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=build /app/node_modules ./node_modules
 
-# Copy built app files (dist folder)
-COPY --from=builder /app/dist ./dist
+COPY --from=build /app/dist ./dist
 
 EXPOSE 8393
 
-CMD ["npm", "run", "start:prod"]
+CMD ["pnpm", "run", "start:prod"]
