@@ -31,7 +31,7 @@ jobs:
             - name: Build and push
               uses: docker/build-push-action@v5
               with:
-                  context: ./server
+                  context: .
                   push: true
                   tags: |
                       ghcr.io/${{ github.repository_owner }}/class-compass-server:latest
