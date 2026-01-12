@@ -30,4 +30,4 @@ COPY --from=build /app/dist ./dist
 
 EXPOSE 8393
 
-CMD ["pnpm", "run", "start:prod"]
+CMD ["/bin/sh", "-c", "npx prisma migrate deploy && npm run start:prod"]
