@@ -125,9 +125,9 @@ export class InvitesService {
 
 		const recoveryUrl = new URL(recoveryUrlString);
 
-		// set a flow hint to indicate this is an invite flow
+		// set a flow hint to indicate this is an onboarding flow
 		// this can be used by the frontend to customize the UI/UX
-		recoveryUrl.searchParams.set("flow_hint", "invite");
+		recoveryUrl.searchParams.set("flow_hint", "onboarding");
 
 		return recoveryUrl.toString();
 	}
