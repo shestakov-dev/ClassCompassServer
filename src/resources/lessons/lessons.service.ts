@@ -338,9 +338,7 @@ export class LessonsService {
 						OR: [{ roomId }, { teacherId }, { dailyScheduleId }],
 					},
 					{
-						dailySchedule: {
-							day: day,
-						},
+						dailySchedule: { day },
 					},
 					{
 						lessonWeek: { in: conflictingWeeks },
