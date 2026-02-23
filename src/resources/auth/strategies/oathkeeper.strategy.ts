@@ -30,7 +30,7 @@ export class OathkeeperStrategy extends PassportStrategy(
 				),
 			}),
 			algorithms: ["RS256"],
-			issuer: "https://api.classcompass.shestakov.app/",
+			issuer: configService.getOrThrow<string>("OATHKEEPER_ISSUER_URL"),
 			audience: "class-compass-backend",
 		});
 	}

@@ -30,7 +30,7 @@ async function bootstrap() {
 		.setVersion("1.0")
 		.addServer("/")
 		.addServer("https://api.classcompass.shestakov.app")
-		.addServer("http://localhost:8393")
+		.addServer("https://api.dev.classcompass.shestakov.app")
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config, {
