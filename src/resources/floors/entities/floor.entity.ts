@@ -34,6 +34,13 @@ export class FloorEntity implements Floor {
 	description: string | null = null;
 
 	/**
+	 * The ETag of the floor plan object in object storage, if any.
+	 * Can be used by clients for cache validation.
+	 * @example "d41d8cd98f00b204e9800998ecf8427e"
+	 */
+	floorPlanETag: string | null = null;
+
+	/**
 	 * The floor's building identifier
 	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
