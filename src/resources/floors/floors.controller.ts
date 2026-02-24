@@ -148,8 +148,6 @@ export class FloorsController {
 	async getFloorPlan(@Param("id", ParseUUIDPipe) id: string) {
 		const url = await this.floorsService.getFloorPlanUrl(id);
 
-		console.log(url);
-
 		return FloorPlanUrlEntity.fromPlain({ url });
 	}
 
