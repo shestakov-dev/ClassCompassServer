@@ -21,6 +21,7 @@
 		"test:watch": "jest --watchAll"
 	},
 	"dependencies": {
+		"@date-fns/utc": "^2.1.1",
 		"@nestjs-modules/ioredis": "^2.0.2",
 		"@nestjs-modules/mailer": "^2.0.2",
 		"@nestjs/common": "^10.4.22",

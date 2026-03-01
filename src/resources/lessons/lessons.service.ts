@@ -48,6 +48,9 @@ export class LessonsService {
 			createLessonDto.dailyScheduleId
 		);
 
+		createLessonDto.startTime = normalizeDate(createLessonDto.startTime);
+		createLessonDto.endTime = normalizeDate(createLessonDto.endTime);
+
 		await this.checkOverlap({
 			startTime: createLessonDto.startTime,
 			endTime: createLessonDto.endTime,
@@ -222,6 +225,16 @@ export class LessonsService {
 			await this.dailySchedulesService.ensureExists(
 				updateLessonDto.dailyScheduleId
 			);
+		}
+
+		if (updateLessonDto.startTime) {
+			updateLessonDto.startTime = normalizeDate(
+				updateLessonDto.startTime
+			);
+		}
+
+		if (updateLessonDto.endTime) {
+			updateLessonDto.endTime = normalizeDate(updateLessonDto.endTime);
 		}
 
 		const existingLesson = await this.findOne(id);
