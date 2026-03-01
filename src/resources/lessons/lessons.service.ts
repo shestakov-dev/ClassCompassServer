@@ -1,6 +1,5 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { Day, LessonWeek, Prisma } from "@prisma/client";
-import { getDay, getISOWeek } from "date-fns";
 
 import { DailySchedulesService } from "@resources/daily-schedules/daily-schedules.service";
 import { KetoNamespace } from "@resources/ory/keto/definitions";
@@ -116,37 +115,16 @@ export class LessonsService {
 		} = filters;
 
 		let timeFilter: Prisma.LessonWhereInput = {};
-		let dayFilter: Day | undefined;
-		let weekFilter: LessonWeek | undefined;
 
 		if (from && to) {
-			const referenceDate = from;
-
 			const normalizedFrom = normalizeDate(from);
 			const normalizedTo = normalizeDate(to);
 
 			timeFilter = getTimeFilter(normalizedFrom, normalizedTo, true);
-
-			const dayIndex = getDay(referenceDate);
-			dayFilter = this.DAY_MAPPING[dayIndex];
-
-			const isoWeek = getISOWeek(referenceDate);
-			weekFilter = isoWeek % 2 === 0 ? LessonWeek.even : LessonWeek.odd;
 		} else if (timestamp) {
-			const referenceDate = timestamp;
-
 			const normalizedTime = normalizeDate(timestamp);
 
 			timeFilter = getTimeFilter(normalizedTime, normalizedTime, true);
-
-			const dayIndex = getDay(referenceDate);
-			dayFilter = this.DAY_MAPPING[dayIndex];
-
-			const isoWeek = getISOWeek(referenceDate);
-			weekFilter = isoWeek % 2 === 0 ? LessonWeek.even : LessonWeek.odd;
-		} else {
-			dayFilter = day;
-			weekFilter = week;
 		}
 
 		const where: Prisma.LessonWhereInput = {
@@ -160,15 +138,15 @@ export class LessonsService {
 			// The lesson must be scheduled for the current week
 			// or every week unless ignoreWeek is true
 			lessonWeek:
-				ignoreWeek || !weekFilter
+				ignoreWeek || !week
 					? undefined
-					: { in: [weekFilter, LessonWeek.every] },
+					: { in: [week, LessonWeek.every] },
 
 			// Only get lessons for the current day
 			// and for classes in the specified school
 			dailySchedule: {
 				is: {
-					day: dayFilter,
+					day,
 					classId,
 					class: {
 						schoolId,
