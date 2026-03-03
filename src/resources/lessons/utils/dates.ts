@@ -1,3 +1,4 @@
+import { UTCDate } from "@date-fns/utc";
 import { set } from "date-fns";
 
 /**
@@ -8,7 +9,10 @@ import { set } from "date-fns";
  * @returns A new Date object with the date set to January 1, 1970
  */
 export function normalizeDate(date: Date): Date {
-	return set(date, {
+	// Wrap in UTCDate so the local time zone offset is ignored
+	const utcContextDate = new UTCDate(date);
+
+	return set(utcContextDate, {
 		year: 1970,
 		month: 0,
 		date: 1,
