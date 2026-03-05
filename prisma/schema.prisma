@@ -37,8 +37,8 @@ model User {
     teacher Teacher?
     student Student?
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@index([schoolId])
 }
@@ -55,8 +55,8 @@ model School {
 
     subjects Subject[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model Building {
@@ -68,8 +68,8 @@ model Building {
 
     floors Floor[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     // The building name should be unique within a school
     @@unique([schoolId, name])
@@ -77,17 +77,18 @@ model Building {
 }
 
 model Floor {
-    id          String  @id @default(uuid())
-    number      Int
-    description String?
+    id           String  @id @default(uuid())
+    number       Int
+    description  String?
+    floorPlanETag String?
 
     buildingId String
     building   Building @relation(fields: [buildingId], references: [id])
 
     rooms Room[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     // The floor number should be unique within a building
     @@unique([buildingId, number])
@@ -103,8 +104,8 @@ model Room {
 
     lessons Lesson[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     // The room name should be unique within a floor
     @@unique([floorId, name])
@@ -121,8 +122,8 @@ model Teacher {
 
     lessons Lesson[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model Subject {
@@ -136,8 +137,8 @@ model Subject {
 
     lessons Lesson[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     // The subject name should be unique within a school
     @@unique([schoolId, name])
@@ -155,8 +156,8 @@ model Class {
 
     weeklySchedule DailySchedule[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     // The class name should be unique within a school
     @@unique([schoolId, name])
@@ -172,8 +173,8 @@ model Student {
     classId String
     class   Class  @relation(fields: [classId], references: [id])
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@index([classId])
 }
@@ -187,8 +188,8 @@ model DailySchedule {
 
     lessons Lesson[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@unique([classId, day])
     @@index([classId])
@@ -196,10 +197,10 @@ model DailySchedule {
 }
 
 model Lesson {
-    id           String     @id @default(uuid())
-    startTime    DateTime
-    endTime      DateTime
-    lessonWeek   LessonWeek @default(every)
+    id         String     @id @default(uuid())
+    startTime  DateTime
+    endTime    DateTime
+    lessonWeek LessonWeek @default(every)
 
     roomId String
     room   Room   @relation(fields: [roomId], references: [id])
@@ -213,8 +214,8 @@ model Lesson {
     dailyScheduleId String
     dailySchedule   DailySchedule @relation(fields: [dailyScheduleId], references: [id])
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@index([roomId])
     @@index([teacherId])

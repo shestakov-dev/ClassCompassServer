@@ -28,6 +28,12 @@ const CUSTOM_ERROR_RESPONSES: Partial<Record<HttpStatus, ApiResponseOptions>> =
 			description: "A unique constraint violation occurred.",
 			example: new BadRequestException("Message").getResponse(),
 		},
+		[HttpStatus.UNPROCESSABLE_ENTITY]: {
+			status: HttpStatus.UNPROCESSABLE_ENTITY,
+			description:
+				"The request was well-formed but contains semantic errors.",
+			example: new BadRequestException("Message").getResponse(),
+		},
 	} as const;
 
 export class ApiResponsesOptions {

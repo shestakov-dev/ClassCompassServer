@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 
 import { BuildingsService } from "@resources/buildings/buildings.service";
+import { MinioService } from "@resources/minio/minio.service";
 import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
 
@@ -14,7 +15,8 @@ export class FloorsService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly buildingsService: BuildingsService,
-		private readonly ketoService: KetoService
+		private readonly ketoService: KetoService,
+		private readonly minioService: MinioService
 	) {}
 
 	async create(createFloorDto: CreateFloorDto) {
@@ -67,6 +69,66 @@ export class FloorsService {
 		);
 
 		return removedFloor;
+	}
+
+	async uploadFloorPlan(
+		id: string,
+		file: Express.Multer.File
+	): Promise<void> {
+		await this.ensureExists(id);
+
+		const etag = await this.minioService.putObject(
+			id,
+			file.buffer,
+			file.size,
+			file.mimetype
+		);
+
+		await this.prisma.client.floor.update({
+			where: { id },
+			data: { floorPlanETag: etag },
+		});
+	}
+
+	async getFloorPlanUrl(id: string): Promise<string> {
+		const floor = await this.prisma.client.floor.findUnique({
+			where: { id },
+		});
+
+		if (!floor) {
+			throw new NotFoundException(`Floor with id "${id}" not found`);
+		}
+
+		if (!floor.floorPlanETag) {
+			throw new NotFoundException(
+				`Floor with id "${id}" has no floor plan`
+			);
+		}
+
+		return this.minioService.getPresignedUrl(id);
+	}
+
+	async deleteFloorPlan(id: string): Promise<void> {
+		const floor = await this.prisma.client.floor.findUnique({
+			where: { id },
+		});
+
+		if (!floor) {
+			throw new NotFoundException(`Floor with id "${id}" not found`);
+		}
+
+		if (!floor.floorPlanETag) {
+			throw new NotFoundException(
+				`Floor with id "${id}" has no floor plan`
+			);
+		}
+
+		await this.minioService.removeObject(id);
+
+		await this.prisma.client.floor.update({
+			where: { id },
+			data: { floorPlanETag: null },
+		});
 	}
 
 	async ensureExists(id: string) {
