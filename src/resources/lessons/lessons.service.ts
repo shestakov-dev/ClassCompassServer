@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import {
+	BadRequestException,
+	ConflictException,
+	Injectable,
+} from "@nestjs/common";
 import { Day, LessonWeek, Prisma } from "@prisma/client";
 
 import { DailySchedulesService } from "@resources/daily-schedules/daily-schedules.service";
@@ -14,22 +18,15 @@ import { CreateLessonDto } from "./dto/create-lesson.dto";
 import { FilterLessonsDto } from "./dto/filter-lessons.dto";
 import { UpdateLessonDto } from "./dto/update-lesson.dto";
 
-import { normalizeDate } from "./utils/dates";
+import {
+	getDayFromDate,
+	getWeekParityFromDate,
+	normalizeDate,
+} from "./utils/dates";
 import { getTimeFilter } from "./utils/time-filter";
 
 @Injectable()
 export class LessonsService {
-	// Define mapping for date-fns getDay (0=Sunday) to Prisma Day Enum
-	private readonly DAY_MAPPING: Day[] = [
-		Day.sunday,
-		Day.monday,
-		Day.tuesday,
-		Day.wednesday,
-		Day.thursday,
-		Day.friday,
-		Day.saturday,
-	];
-
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly roomsService: RoomsService,
@@ -114,45 +111,79 @@ export class LessonsService {
 			week,
 		} = filters;
 
+		if (to && !from) {
+			throw new BadRequestException(
+				'"from" is required when "to" is provided'
+			);
+		}
+
 		let timeFilter: Prisma.LessonWhereInput = {};
+
+		// When a timestamp or range is provided, we derive the day and week
+		// from the date portion of those timestamps.
+
+		// When only day/week params are given (weekly mode or full-day date mode),
+		// we use those directly.
+
+		let effectiveDay: Day | undefined = undefined;
+		let effectiveWeek: LessonWeek | undefined = undefined;
 
 		if (from && to) {
 			const normalizedFrom = normalizeDate(from);
 			const normalizedTo = normalizeDate(to);
 
 			timeFilter = getTimeFilter(normalizedFrom, normalizedTo, true);
+
+			effectiveDay = getDayFromDate(from);
+
+			if (!ignoreWeek) {
+				effectiveWeek = getWeekParityFromDate(from);
+			}
 		} else if (timestamp) {
 			const normalizedTime = normalizeDate(timestamp);
 
 			timeFilter = getTimeFilter(normalizedTime, normalizedTime, true);
+
+			effectiveDay = getDayFromDate(timestamp);
+
+			if (!ignoreWeek) {
+				effectiveWeek = getWeekParityFromDate(timestamp);
+			}
+		} else {
+			effectiveDay = day;
+
+			if (!ignoreWeek && week) {
+				effectiveWeek = week;
+			}
 		}
 
 		const where: Prisma.LessonWhereInput = {
-			subjectId,
-			roomId,
-			teacherId,
-
-			// Apply time filtering based on a timestamp or from/to range
-			...timeFilter,
-
-			// The lesson must be scheduled for the current week
-			// or every week unless ignoreWeek is true
-			lessonWeek:
-				ignoreWeek || !week
-					? undefined
-					: { in: [week, LessonWeek.every] },
-
-			// Only get lessons for the current day
+			// Only get lessons for the resolved day
 			// and for classes in the specified school
 			dailySchedule: {
 				is: {
-					day,
+					day: effectiveDay,
 					classId,
 					class: {
 						schoolId,
 					},
 				},
 			},
+
+			// Filter by week parity when a specific week type has been resolved.
+			// "odd" or "even" also includes "every" lessons (they recur on all weeks).
+			lessonWeek:
+				effectiveWeek === undefined
+					? undefined
+					: { in: [effectiveWeek, LessonWeek.every] },
+
+			// Apply time filtering based on a timestamp or from/to range
+			...timeFilter,
+
+			// Apply additional optional filters
+			subjectId,
+			roomId,
+			teacherId,
 		};
 
 		return this.prisma.client.lesson.findMany({
