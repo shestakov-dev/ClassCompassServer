@@ -1,11 +1,6 @@
 import { ApiSchema } from "@nestjs/swagger";
-import {
-	IsNotEmpty,
-	IsNumber,
-	IsOptional,
-	IsString,
-	IsUUID,
-} from "class-validator";
+import { Transform } from "class-transformer";
+import { IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
 
 @ApiSchema({
 	description: "The data required to create a new floor",
@@ -24,8 +19,8 @@ export class CreateFloorDto {
 	 */
 	@IsOptional()
 	@IsString()
-	@IsNotEmpty()
-	description?: string;
+	@Transform(({ value }) => (value === "" ? null : value))
+	description?: string | null;
 
 	/**
 	 * The floor's building identifier
