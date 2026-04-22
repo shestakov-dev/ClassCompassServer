@@ -7,7 +7,6 @@ import { KetoService } from "@resources/ory/keto/keto.service";
 import { PrismaService } from "@prisma/prisma.service";
 
 import { CreateDailyScheduleDto } from "./dto/create-daily-schedule.dto";
-import { UpdateDailyScheduleDto } from "./dto/update-daily-schedule.dto";
 
 @Injectable()
 export class DailySchedulesService {
@@ -17,14 +16,24 @@ export class DailySchedulesService {
 		private readonly ketoService: KetoService
 	) {}
 
-	async create(createDailyScheduleDto: CreateDailyScheduleDto) {
+	async findOrCreate(createDailyScheduleDto: CreateDailyScheduleDto) {
 		await this.classesService.ensureExists(createDailyScheduleDto.classId);
+
+		const existingDailySchedule =
+			await this.prisma.client.dailySchedule.findUnique({
+				where: {
+					classId_day: createDailyScheduleDto,
+				},
+			});
+
+		if (existingDailySchedule) {
+			return existingDailySchedule;
+		}
 
 		const newDailySchedule = await this.prisma.client.dailySchedule.create({
 			data: createDailyScheduleDto,
 		});
 
-		// Add parent class relationship
 		await this.addParentClass(
 			newDailySchedule.id,
 			newDailySchedule.classId
@@ -33,30 +42,9 @@ export class DailySchedulesService {
 		return newDailySchedule;
 	}
 
-	async findAllByClass(classId: string) {
-		await this.classesService.ensureExists(classId);
-
-		return this.prisma.client.dailySchedule.findMany({
-			where: { classId },
-		});
-	}
-
 	findOne(id: string) {
 		return this.prisma.client.dailySchedule.findUniqueOrThrow({
 			where: { id },
-		});
-	}
-
-	async update(id: string, updateDailyScheduleDto: UpdateDailyScheduleDto) {
-		if (updateDailyScheduleDto.classId) {
-			await this.classesService.ensureExists(
-				updateDailyScheduleDto.classId
-			);
-		}
-
-		return this.prisma.client.dailySchedule.update({
-			where: { id },
-			data: updateDailyScheduleDto,
 		});
 	}
 

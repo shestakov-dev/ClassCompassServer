@@ -34,10 +34,10 @@ export class LessonsController {
 	@Post()
 	@ApiPost({ type: LessonEntity })
 	@KetoPermission<CreateLessonDto>({
-		namespace: KetoNamespace.DailySchedule,
+		namespace: KetoNamespace.Class,
 		relation: "manage",
 		source: "body",
-		key: "dailyScheduleId",
+		key: "classId",
 	})
 	async create(@Body() createLessonDto: CreateLessonDto) {
 		return LessonEntity.fromPlain(

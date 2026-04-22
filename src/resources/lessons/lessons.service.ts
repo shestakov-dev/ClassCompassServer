@@ -40,24 +40,34 @@ export class LessonsService {
 		await this.roomsService.ensureExists(createLessonDto.roomId);
 		await this.teachersService.ensureExists(createLessonDto.teacherId);
 		await this.subjectsService.ensureExists(createLessonDto.subjectId);
-		await this.dailySchedulesService.ensureExists(
-			createLessonDto.dailyScheduleId
-		);
 
-		createLessonDto.startTime = normalizeDate(createLessonDto.startTime);
-		createLessonDto.endTime = normalizeDate(createLessonDto.endTime);
+		const dailySchedule = await this.dailySchedulesService.findOrCreate({
+			classId: createLessonDto.classId,
+			day: createLessonDto.day,
+		});
+
+		const startTime = normalizeDate(createLessonDto.startTime);
+		const endTime = normalizeDate(createLessonDto.endTime);
 
 		await this.checkOverlap({
-			startTime: createLessonDto.startTime,
-			endTime: createLessonDto.endTime,
+			startTime,
+			endTime,
 			lessonWeek: createLessonDto.lessonWeek ?? LessonWeek.every,
 			roomId: createLessonDto.roomId,
 			teacherId: createLessonDto.teacherId,
-			dailyScheduleId: createLessonDto.dailyScheduleId,
+			dailyScheduleId: dailySchedule.id,
 		});
 
+		// discard classId and day from the DTO since they are not part of the lesson model
+		const { classId, day, ...lessonData } = createLessonDto;
+
 		const newLesson = await this.prisma.client.lesson.create({
-			data: createLessonDto,
+			data: {
+				...lessonData,
+				startTime,
+				endTime,
+				dailyScheduleId: dailySchedule.id,
+			},
 			include: {
 				room: true,
 				teacher: {
@@ -230,12 +240,6 @@ export class LessonsService {
 			await this.subjectsService.ensureExists(updateLessonDto.subjectId);
 		}
 
-		if (updateLessonDto.dailyScheduleId) {
-			await this.dailySchedulesService.ensureExists(
-				updateLessonDto.dailyScheduleId
-			);
-		}
-
 		if (updateLessonDto.startTime) {
 			updateLessonDto.startTime = normalizeDate(
 				updateLessonDto.startTime
@@ -248,21 +252,47 @@ export class LessonsService {
 
 		const existingLesson = await this.findOne(id);
 
+		const oldDailyScheduleId = existingLesson.dailyScheduleId;
+
+		// Resolve daily schedule from classId/day if either is being changed
+		let resolvedDailyScheduleId = oldDailyScheduleId;
+
+		if (
+			updateLessonDto.classId !== undefined ||
+			updateLessonDto.day !== undefined
+		) {
+			const newClassId =
+				updateLessonDto.classId ??
+				existingLesson.dailySchedule!.classId;
+			const newDay =
+				updateLessonDto.day ?? existingLesson.dailySchedule!.day;
+
+			const dailySchedule = await this.dailySchedulesService.findOrCreate(
+				{
+					classId: newClassId,
+					day: newDay,
+				}
+			);
+
+			resolvedDailyScheduleId = dailySchedule.id;
+		}
+
 		await this.checkOverlap({
 			startTime: updateLessonDto.startTime ?? existingLesson.startTime,
 			endTime: updateLessonDto.endTime ?? existingLesson.endTime,
 			lessonWeek: updateLessonDto.lessonWeek ?? existingLesson.lessonWeek,
 			roomId: updateLessonDto.roomId ?? existingLesson.roomId,
 			teacherId: updateLessonDto.teacherId ?? existingLesson.teacherId,
-			dailyScheduleId:
-				updateLessonDto.dailyScheduleId ??
-				existingLesson.dailyScheduleId,
+			dailyScheduleId: resolvedDailyScheduleId,
 			excludeLessonId: id,
 		});
 
-		return this.prisma.client.lesson.update({
+		// discard classId and day from the DTO since they are not part of the lesson model
+		const { classId, day, ...lessonData } = updateLessonDto;
+
+		const updatedLesson = await this.prisma.client.lesson.update({
 			where: { id },
-			data: updateLessonDto,
+			data: { ...lessonData, dailyScheduleId: resolvedDailyScheduleId },
 			include: {
 				room: true,
 				teacher: {
@@ -274,6 +304,13 @@ export class LessonsService {
 				},
 			},
 		});
+
+		// If the daily schedule changed, clean up the old one if it's now empty
+		if (resolvedDailyScheduleId !== oldDailyScheduleId) {
+			await this.cleanupDailyScheduleIfEmpty(oldDailyScheduleId);
+		}
+
+		return updatedLesson;
 	}
 
 	async remove(id: string) {
@@ -291,13 +328,24 @@ export class LessonsService {
 			},
 		});
 
-		// Remove parent daily schedule relationship
 		await this.removeParentDailySchedule(
 			removedLesson.id,
 			removedLesson.dailyScheduleId
 		);
 
+		await this.cleanupDailyScheduleIfEmpty(removedLesson.dailyScheduleId);
+
 		return removedLesson;
+	}
+
+	private async cleanupDailyScheduleIfEmpty(dailyScheduleId: string) {
+		const remainingLessons = await this.prisma.client.lesson.count({
+			where: { dailyScheduleId },
+		});
+
+		if (remainingLessons === 0) {
+			await this.dailySchedulesService.remove(dailyScheduleId);
+		}
 	}
 
 	private async addParentDailySchedule(

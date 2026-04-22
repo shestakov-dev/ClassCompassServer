@@ -66,9 +66,17 @@ export class CreateLessonDto {
 	subjectId: string;
 
 	/**
-	 * The lesson's daily schedule identifier
+	 * The lesson's class identifier
 	 * @example "550e8400-e29b-41d4-a716-446655440000"
 	 */
 	@IsUUID()
-	dailyScheduleId: string;
+	classId: string;
+
+	/**
+	 * The lesson's day of the week
+	 * @example "monday"
+	 */
+	@IsEnum($Enums.Day)
+	@ApiProperty({ enum: $Enums.Day })
+	day: $Enums.Day;
 }

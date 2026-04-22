@@ -67,6 +67,17 @@ export default [
 			"@typescript-eslint/explicit-module-boundary-types": "off",
 			"@typescript-eslint/no-explicit-any": "off",
 
+			"@typescript-eslint/no-unused-vars": [
+				"error",
+				{
+					ignoreRestSiblings: true,
+					// Optional but highly recommended for NestJS: ignores unused vars starting with an underscore (e.g., _req)
+					argsIgnorePattern: "^_",
+					varsIgnorePattern: "^_",
+					caughtErrorsIgnorePattern: "^_",
+				},
+			],
+
 			// Sort named imports alphabetically
 			"sort-imports": [
 				"error",
