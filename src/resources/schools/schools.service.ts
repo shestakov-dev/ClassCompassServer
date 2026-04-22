@@ -35,7 +35,15 @@ export class SchoolsService {
 			data: createSchoolDto,
 		});
 
-		await this.addParentPlatform(newSchool.id, this.platformObjectId);
+		try {
+			await this.addParentPlatform(newSchool.id, this.platformObjectId);
+		} catch (error) {
+			await this.prisma.client.school.delete({
+				where: { id: newSchool.id },
+			});
+
+			throw error;
+		}
 
 		return newSchool;
 	}
@@ -58,14 +66,16 @@ export class SchoolsService {
 	}
 
 	async remove(id: string) {
-		const newSchool = await this.prisma.client.school.delete({
+		const removedSchool = await this.prisma.client.school.delete({
 			where: { id },
 		});
 
-		// Remove parent platform relationship
-		await this.removeParentPlatform(newSchool.id, this.platformObjectId);
+		await this.removeParentPlatform(
+			removedSchool.id,
+			this.platformObjectId
+		);
 
-		return newSchool;
+		return removedSchool;
 	}
 
 	async promoteToAdmin(schoolId: string, userId: string) {

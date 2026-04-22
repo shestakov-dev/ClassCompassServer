@@ -43,8 +43,15 @@ export class SubjectsService {
 			},
 		});
 
-		// Add parent school relationship
-		await this.addParentSchool(subject.id, createSubjectDto.schoolId);
+		try {
+			await this.addParentSchool(subject.id, createSubjectDto.schoolId);
+		} catch (error) {
+			await this.prisma.client.subject.delete({
+				where: { id: subject.id },
+			});
+
+			throw error;
+		}
 
 		return subject;
 	}
@@ -100,17 +107,19 @@ export class SubjectsService {
 	}
 
 	async remove(id: string) {
-		const newSubject = await this.prisma.client.subject.delete({
+		const removedSubject = await this.prisma.client.subject.delete({
 			where: { id },
 			include: {
 				teachers: true,
 			},
 		});
 
-		// Remove parent school relationship
-		await this.removeParentSchool(newSubject.id, newSubject.schoolId);
+		await this.removeParentSchool(
+			removedSubject.id,
+			removedSubject.schoolId
+		);
 
-		return newSubject;
+		return removedSubject;
 	}
 
 	async ensureExists(id: string) {

@@ -80,11 +80,18 @@ export class LessonsService {
 			},
 		});
 
-		// Add parent daily schedule relationship
-		await this.addParentDailySchedule(
-			newLesson.id,
-			newLesson.dailyScheduleId
-		);
+		try {
+			await this.addParentClass(
+				newLesson.id,
+				newLesson.dailySchedule.classId
+			);
+		} catch (error) {
+			await this.prisma.client.lesson.delete({
+				where: { id: newLesson.id },
+			});
+
+			throw error;
+		}
 
 		return newLesson;
 	}
@@ -253,6 +260,7 @@ export class LessonsService {
 		const existingLesson = await this.findOne(id);
 
 		const oldDailyScheduleId = existingLesson.dailyScheduleId;
+		const oldClassId = existingLesson.dailySchedule.classId;
 
 		// Resolve daily schedule from classId/day if either is being changed
 		let resolvedDailyScheduleId = oldDailyScheduleId;
@@ -262,10 +270,9 @@ export class LessonsService {
 			updateLessonDto.day !== undefined
 		) {
 			const newClassId =
-				updateLessonDto.classId ??
-				existingLesson.dailySchedule!.classId;
+				updateLessonDto.classId ?? existingLesson.dailySchedule.classId;
 			const newDay =
-				updateLessonDto.day ?? existingLesson.dailySchedule!.day;
+				updateLessonDto.day ?? existingLesson.dailySchedule.day;
 
 			const dailySchedule = await this.dailySchedulesService.findOrCreate(
 				{
@@ -305,6 +312,48 @@ export class LessonsService {
 			},
 		});
 
+		const newClassId = updatedLesson.dailySchedule.classId;
+
+		if (newClassId !== oldClassId) {
+			try {
+				await this.replaceParentClass(id, oldClassId, newClassId);
+			} catch (error) {
+				try {
+					await this.prisma.client.lesson.update({
+						where: { id },
+						data: {
+							startTime: existingLesson.startTime,
+							endTime: existingLesson.endTime,
+							lessonWeek: existingLesson.lessonWeek,
+							roomId: existingLesson.roomId,
+							teacherId: existingLesson.teacherId,
+							subjectId: existingLesson.subjectId,
+							dailyScheduleId: oldDailyScheduleId,
+						},
+					});
+				} catch (rollbackError) {
+					console.error("Failed to rollback lesson:", rollbackError);
+
+					throw rollbackError;
+				}
+
+				if (resolvedDailyScheduleId !== oldDailyScheduleId) {
+					try {
+						await this.cleanupDailyScheduleIfEmpty(
+							resolvedDailyScheduleId
+						);
+					} catch (cleanupError) {
+						console.error(
+							"Failed to cleanup daily schedule after lesson rollback:",
+							cleanupError
+						);
+					}
+				}
+
+				throw error;
+			}
+		}
+
 		// If the daily schedule changed, clean up the old one if it's now empty
 		if (resolvedDailyScheduleId !== oldDailyScheduleId) {
 			await this.cleanupDailyScheduleIfEmpty(oldDailyScheduleId);
@@ -328,12 +377,12 @@ export class LessonsService {
 			},
 		});
 
-		await this.removeParentDailySchedule(
-			removedLesson.id,
-			removedLesson.dailyScheduleId
-		);
-
 		await this.cleanupDailyScheduleIfEmpty(removedLesson.dailyScheduleId);
+
+		await this.removeParentClass(
+			removedLesson.id,
+			removedLesson.dailySchedule.classId
+		);
 
 		return removedLesson;
 	}
@@ -348,25 +397,46 @@ export class LessonsService {
 		}
 	}
 
-	private async addParentDailySchedule(
-		lessonId: string,
-		dailyScheduleId: string
-	) {
+	private async addParentClass(lessonId: string, classId: string) {
 		await this.ketoService.linkChild(
 			KetoNamespace.Lesson,
 			lessonId,
-			dailyScheduleId
+			classId
 		);
 	}
 
-	private async removeParentDailySchedule(
-		lessonId: string,
-		dailyScheduleId: string
-	) {
+	private async removeParentClass(lessonId: string, classId: string) {
 		await this.ketoService.unlinkChild(
 			KetoNamespace.Lesson,
 			lessonId,
-			dailyScheduleId
+			classId
+		);
+	}
+
+	private async replaceParentClass(
+		lessonId: string,
+		oldClassId: string,
+		newClassId: string
+	) {
+		await this.ketoService.replaceRelationship(
+			{
+				namespace: KetoNamespace.Lesson,
+				object: lessonId,
+				relation: "parentClass",
+				subjectSet: {
+					namespace: KetoNamespace.Class,
+					object: oldClassId,
+				},
+			},
+			{
+				namespace: KetoNamespace.Lesson,
+				object: lessonId,
+				relation: "parentClass",
+				subjectSet: {
+					namespace: KetoNamespace.Class,
+					object: newClassId,
+				},
+			}
 		);
 	}
 

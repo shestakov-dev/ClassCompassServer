@@ -15,6 +15,14 @@ import { PrismaService } from "@prisma/prisma.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
+type UserCreateRollbackState = {
+	userId: string;
+	schoolId: string;
+	identityId: string;
+	parentSchoolLinked: boolean;
+	schoolMemberLinked: boolean;
+};
+
 @Injectable()
 export class UsersService {
 	constructor(
@@ -46,11 +54,32 @@ export class UsersService {
 			},
 		});
 
-		// Add parent school relationship
-		await this.addParentSchool(newUser.id, createUserDto.schoolId);
+		const rollbackState: UserCreateRollbackState = {
+			userId: newUser.id,
+			schoolId: createUserDto.schoolId,
+			identityId: kratosIdentity.id,
+			parentSchoolLinked: false,
+			schoolMemberLinked: false,
+		};
 
-		// Add the user as a member of the school
-		await this.addMemberToSchool(createUserDto.schoolId, kratosIdentity.id);
+		// Add parent school relationship
+		try {
+			await this.addParentSchool(newUser.id, createUserDto.schoolId);
+
+			rollbackState.parentSchoolLinked = true;
+
+			// Add the user as a member of the school
+			await this.addMemberToSchool(
+				createUserDto.schoolId,
+				kratosIdentity.id
+			);
+
+			rollbackState.schoolMemberLinked = true;
+		} catch (error) {
+			await this.rollbackFailedCreate(rollbackState);
+
+			throw error;
+		}
 
 		return newUser;
 	}
@@ -117,30 +146,48 @@ export class UsersService {
 	}
 
 	async update(id: string, updateUserDto: UpdateUserDto) {
+		const existingUser = await this.prisma.client.user.findUniqueOrThrow({
+			where: { id },
+			include: {
+				student: true,
+				teacher: { include: { subjects: true } },
+			},
+		});
+
 		if (updateUserDto.schoolId) {
 			await this.schoolsService.ensureExists(updateUserDto.schoolId);
 		}
 
-		const updatedUser = await this.prisma.client.user.update({
-			where: { id },
-			data: updateUserDto,
-			include: {
-				student: true,
-				teacher: { include: { subjects: true } },
-			},
+		await this.kratosService.updateIdentity(existingUser.identityId, {
+			email: updateUserDto.email ?? existingUser.email,
+			firstName: updateUserDto.firstName ?? existingUser.firstName,
+			lastName: updateUserDto.lastName ?? existingUser.lastName,
 		});
 
-		await this.kratosService.updateIdentity(updatedUser.identityId, {
-			email: updatedUser.email,
-			firstName: updatedUser.firstName,
-			lastName: updatedUser.lastName,
-		});
+		try {
+			const updatedUser = await this.prisma.client.user.update({
+				where: { id },
+				data: updateUserDto,
+				include: {
+					student: true,
+					teacher: { include: { subjects: true } },
+				},
+			});
 
-		return updatedUser;
+			return updatedUser;
+		} catch (error) {
+			await this.kratosService.updateIdentity(existingUser.identityId, {
+				email: existingUser.email,
+				firstName: existingUser.firstName,
+				lastName: existingUser.lastName,
+			});
+
+			throw error;
+		}
 	}
 
 	async remove(id: string) {
-		const removedUser = await this.prisma.client.user.delete({
+		const removedUser = await this.prisma.client.user.findUniqueOrThrow({
 			where: { id },
 			include: {
 				student: true,
@@ -148,24 +195,47 @@ export class UsersService {
 			},
 		});
 
-		// Remove the identity from Ory Kratos
+		const hadMemberAccess = await this.ketoService.checkPermission({
+			namespace: KetoNamespace.School,
+			object: removedUser.schoolId,
+			relation: "members",
+			subjectId: removedUser.identityId,
+		});
+
+		const hadAdminAccess = await this.ketoService.checkPermission({
+			namespace: KetoNamespace.School,
+			object: removedUser.schoolId,
+			relation: "admins",
+			subjectId: removedUser.identityId,
+		});
+
+		const deletedUser = await this.prisma.client.user.delete({
+			where: { id },
+			include: {
+				student: true,
+				teacher: { include: { subjects: true } },
+			},
+		});
+
 		await this.kratosService.deleteIdentity(removedUser.identityId);
 
-		// Remove parent school relationship
 		await this.removeParentSchool(removedUser.id, removedUser.schoolId);
 
-		// Remove the user from the school members/admins
-		await this.removeMemberFromSchool(
-			removedUser.schoolId,
-			removedUser.identityId
-		);
+		if (hadMemberAccess) {
+			await this.removeMemberFromSchool(
+				removedUser.schoolId,
+				removedUser.identityId
+			);
+		}
 
-		await this.removeAdminFromSchool(
-			removedUser.schoolId,
-			removedUser.identityId
-		);
+		if (hadAdminAccess) {
+			await this.removeAdminFromSchool(
+				removedUser.schoolId,
+				removedUser.identityId
+			);
+		}
 
-		return removedUser;
+		return deletedUser;
 	}
 
 	async ensureExists(id: string) {
@@ -213,5 +283,49 @@ export class UsersService {
 			relation: "admins",
 			subjectId: identityId,
 		});
+	}
+
+	private async rollbackFailedCreate(state: UserCreateRollbackState) {
+		if (state.schoolMemberLinked) {
+			try {
+				await this.removeMemberFromSchool(
+					state.schoolId,
+					state.identityId
+				);
+			} catch (cleanupError) {
+				console.error(
+					"Failed to remove user member relationship:",
+					cleanupError
+				);
+			}
+		}
+
+		if (state.parentSchoolLinked) {
+			try {
+				await this.removeParentSchool(state.userId, state.schoolId);
+			} catch (cleanupError) {
+				console.error(
+					"Failed to remove user parent school relationship:",
+					cleanupError
+				);
+			}
+		}
+
+		try {
+			await this.prisma.client.user.delete({
+				where: { id: state.userId },
+			});
+		} catch (cleanupError) {
+			console.error("Failed to remove user from Prisma:", cleanupError);
+		}
+
+		try {
+			await this.kratosService.deleteIdentity(state.identityId);
+		} catch (cleanupError) {
+			console.error(
+				"Failed to remove Kratos identity after user rollback:",
+				cleanupError
+			);
+		}
 	}
 }

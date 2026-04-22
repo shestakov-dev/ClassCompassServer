@@ -5,6 +5,8 @@ import { MinioService } from "@resources/minio/minio.service";
 import { KetoNamespace } from "@resources/ory/keto/definitions";
 import { KetoService } from "@resources/ory/keto/keto.service";
 
+import { UploadedFilePayload } from "@shared/types/uploaded-file.type";
+
 import { PrismaService } from "@prisma/prisma.service";
 
 import { CreateFloorDto } from "./dto/create-floor.dto";
@@ -26,8 +28,15 @@ export class FloorsService {
 			data: createFloorDto,
 		});
 
-		// Add parent building relationship
-		await this.addParentBuilding(newFloor.id, newFloor.buildingId);
+		try {
+			await this.addParentBuilding(newFloor.id, newFloor.buildingId);
+		} catch (error) {
+			await this.prisma.client.floor.delete({
+				where: { id: newFloor.id },
+			});
+
+			throw error;
+		}
 
 		return newFloor;
 	}
@@ -62,7 +71,6 @@ export class FloorsService {
 			where: { id },
 		});
 
-		// Remove parent building relationship
 		await this.removeParentBuilding(
 			removedFloor.id,
 			removedFloor.buildingId
@@ -73,7 +81,7 @@ export class FloorsService {
 
 	async uploadFloorPlan(
 		id: string,
-		file: Express.Multer.File
+		file: UploadedFilePayload
 	): Promise<void> {
 		await this.ensureExists(id);
 

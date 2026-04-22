@@ -24,8 +24,15 @@ export class ClassesService {
 			data: createClassDto,
 		});
 
-		// Add parent school relationship
-		await this.addParentSchool(newClass.id, createClassDto.schoolId);
+		try {
+			await this.addParentSchool(newClass.id, createClassDto.schoolId);
+		} catch (error) {
+			await this.prisma.client.class.delete({
+				where: { id: newClass.id },
+			});
+
+			throw error;
+		}
 
 		return newClass;
 	}
@@ -60,7 +67,6 @@ export class ClassesService {
 			where: { id },
 		});
 
-		// Remove parent school relationship
 		await this.removeParentSchool(removedClass.id, removedClass.schoolId);
 
 		return removedClass;

@@ -34,10 +34,18 @@ export class DailySchedulesService {
 			data: createDailyScheduleDto,
 		});
 
-		await this.addParentClass(
-			newDailySchedule.id,
-			newDailySchedule.classId
-		);
+		try {
+			await this.addParentClass(
+				newDailySchedule.id,
+				newDailySchedule.classId
+			);
+		} catch (error) {
+			await this.prisma.client.dailySchedule.delete({
+				where: { id: newDailySchedule.id },
+			});
+
+			throw error;
+		}
 
 		return newDailySchedule;
 	}
@@ -54,7 +62,6 @@ export class DailySchedulesService {
 				where: { id },
 			});
 
-		// Remove parent class relationship
 		await this.removeParentClass(
 			removedDailySchedule.id,
 			removedDailySchedule.classId

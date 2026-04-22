@@ -8,6 +8,8 @@ import {
 } from "@ory/kratos-client";
 import { AxiosError } from "axios";
 
+import { retry } from "@shared/utils/retry.util";
+
 @Injectable()
 export class KratosService {
 	private readonly identityApi: IdentityApi;
@@ -33,46 +35,52 @@ export class KratosService {
 		traits: Record<string, unknown>,
 		publicMetadata?: Record<string, unknown>
 	) {
-		const response = await this.identityApi.createIdentity({
-			createIdentityBody: {
-				schema_id: "default",
-				traits,
-				metadata_public: publicMetadata,
-			},
-		});
+		const response = await retry(() =>
+			this.identityApi.createIdentity({
+				createIdentityBody: {
+					schema_id: "default",
+					traits,
+					metadata_public: publicMetadata,
+				},
+			})
+		);
 
 		return response.data;
 	}
 
 	async updateIdentity(identityId: string, traits: Record<string, unknown>) {
-		const response = await this.identityApi.updateIdentity({
-			id: identityId,
-			updateIdentityBody: {
-				schema_id: "default",
-				state: "active",
-				traits,
-			},
-		});
+		const response = await retry(() =>
+			this.identityApi.updateIdentity({
+				id: identityId,
+				updateIdentityBody: {
+					schema_id: "default",
+					state: "active",
+					traits,
+				},
+			})
+		);
 
 		return response.data;
 	}
 
 	async deleteIdentity(identityId: string): Promise<void> {
-		await this.identityApi.deleteIdentity({ id: identityId });
+		await retry(() => this.identityApi.deleteIdentity({ id: identityId }));
 	}
 
 	async getSession(sessionCookie: string): Promise<Session> {
-		const response = await this.frontendApi.toSession({
-			cookie: sessionCookie,
-		});
+		const response = await retry(() =>
+			this.frontendApi.toSession({
+				cookie: sessionCookie,
+			})
+		);
 
 		return response.data;
 	}
 
 	async extendSession(sessionId: string): Promise<void> {
-		const response = await this.identityApi.extendSession({
-			id: sessionId,
-		});
+		const response = await retry(() =>
+			this.identityApi.extendSession({ id: sessionId })
+		);
 
 		// The extension was successful if we get a 200 or 204 response
 		if (response.status !== 200 && response.status !== 204) {
@@ -82,7 +90,7 @@ export class KratosService {
 
 	async identityExists(identityId: string): Promise<boolean> {
 		try {
-			await this.identityApi.getIdentity({ id: identityId });
+			await retry(() => this.identityApi.getIdentity({ id: identityId }));
 
 			return true;
 		} catch (error) {
@@ -100,9 +108,11 @@ export class KratosService {
 	}
 
 	async getIdentityByEmail(email: string) {
-		const response = await this.identityApi.listIdentities({
-			credentialsIdentifier: email,
-		});
+		const response = await retry(() =>
+			this.identityApi.listIdentities({
+				credentialsIdentifier: email,
+			})
+		);
 
 		if (response.data.length === 0) {
 			throw new NotFoundException("Identity not found");
@@ -116,14 +126,15 @@ export class KratosService {
 		returnTo: string
 	): Promise<string> {
 		try {
-			const response =
-				await this.identityApi.createRecoveryLinkForIdentity({
+			const response = await retry(() =>
+				this.identityApi.createRecoveryLinkForIdentity({
 					createRecoveryLinkForIdentityBody: {
 						identity_id: identityId,
 						expires_in: "15m",
 					},
 					returnTo,
-				});
+				})
+			);
 
 			return response.data.recovery_link;
 		} catch (error: unknown) {
@@ -141,24 +152,26 @@ export class KratosService {
 	}
 
 	async verifyIdentityEmail(identityId: string): Promise<void> {
-		if (!this.identityExists(identityId)) {
+		if (!(await this.identityExists(identityId))) {
 			throw new NotFoundException("Identity not found");
 		}
 
-		await this.identityApi.patchIdentity({
-			id: identityId,
-			jsonPatch: [
-				{
-					op: "replace",
-					path: "/verifiable_addresses/0/status",
-					value: "completed",
-				},
-				{
-					op: "replace",
-					path: "/verifiable_addresses/0/verified",
-					value: true,
-				},
-			],
-		});
+		await retry(() =>
+			this.identityApi.patchIdentity({
+				id: identityId,
+				jsonPatch: [
+					{
+						op: "replace",
+						path: "/verifiable_addresses/0/status",
+						value: "completed",
+					},
+					{
+						op: "replace",
+						path: "/verifiable_addresses/0/verified",
+						value: true,
+					},
+				],
+			})
+		);
 	}
 }

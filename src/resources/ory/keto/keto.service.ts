@@ -8,6 +8,8 @@ import {
 } from "@ory/keto-client";
 import { AxiosError } from "axios";
 
+import { retry } from "@shared/utils/retry.util";
+
 import {
 	KetoCheckTuple,
 	KetoChildNamespace,
@@ -48,14 +50,16 @@ export class KetoService {
 		try {
 			const relationship = this.mapTupleToRelationship(tuple);
 
-			await this.writeRelationApi.patchRelationships({
-				relationshipPatch: [
-					{
-						action: "insert",
-						relation_tuple: relationship,
-					},
-				],
-			});
+			await retry(() =>
+				this.writeRelationApi.patchRelationships({
+					relationshipPatch: [
+						{
+							action: "insert",
+							relation_tuple: relationship,
+						},
+					],
+				})
+			);
 		} catch (error) {
 			this.handleKetoError(error, "create");
 		}
@@ -67,14 +71,16 @@ export class KetoService {
 		try {
 			const relationship = this.mapTupleToRelationship(tuple);
 
-			await this.writeRelationApi.patchRelationships({
-				relationshipPatch: [
-					{
-						action: "delete",
-						relation_tuple: relationship,
-					},
-				],
-			});
+			await retry(() =>
+				this.writeRelationApi.patchRelationships({
+					relationshipPatch: [
+						{
+							action: "delete",
+							relation_tuple: relationship,
+						},
+					],
+				})
+			);
 		} catch (error) {
 			this.handleKetoError(error, "delete");
 		}
@@ -88,18 +94,20 @@ export class KetoService {
 			const oldRelationship = this.mapTupleToRelationship(oldTuple);
 			const newRelationship = this.mapTupleToRelationship(newTuple);
 
-			await this.writeRelationApi.patchRelationships({
-				relationshipPatch: [
-					{
-						action: "delete",
-						relation_tuple: oldRelationship,
-					},
-					{
-						action: "insert",
-						relation_tuple: newRelationship,
-					},
-				],
-			});
+			await retry(() =>
+				this.writeRelationApi.patchRelationships({
+					relationshipPatch: [
+						{
+							action: "delete",
+							relation_tuple: oldRelationship,
+						},
+						{
+							action: "insert",
+							relation_tuple: newRelationship,
+						},
+					],
+				})
+			);
 		} catch (error) {
 			this.handleKetoError(error, "replace");
 		}
@@ -149,7 +157,9 @@ export class KetoService {
 		tuple: KetoCheckTuple<N>
 	): Promise<boolean> {
 		try {
-			const response = await this.permissionApi.checkPermission(tuple);
+			const response = await retry(() =>
+				this.permissionApi.checkPermission(tuple)
+			);
 
 			return response.data.allowed;
 		} catch (error) {
@@ -164,7 +174,9 @@ export class KetoService {
 		tuple: Partial<KetoCheckTuple<N>>
 	): Promise<Relationship[]> {
 		try {
-			const response = await this.readRelationApi.getRelationships(tuple);
+			const response = await retry(() =>
+				this.readRelationApi.getRelationships(tuple)
+			);
 
 			return response.data.relation_tuples ?? [];
 		} catch (error) {

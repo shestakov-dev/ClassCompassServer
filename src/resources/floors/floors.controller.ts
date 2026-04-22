@@ -21,6 +21,7 @@ import { KetoNamespace } from "@resources/ory/keto/definitions";
 
 import { ApiPut } from "@shared/decorators/api-put.decorator";
 import { KetoPermission } from "@shared/decorators/keto-permission.decorator";
+import { UploadedFilePayload } from "@shared/types/uploaded-file.type";
 
 import { ApiDelete, ApiGet, ApiPatch, ApiPost } from "@decorators";
 
@@ -133,7 +134,7 @@ export class FloorsController {
 					fileIsRequired: true,
 				})
 		)
-		file: Express.Multer.File
+		file: UploadedFilePayload
 	) {
 		await this.floorsService.uploadFloorPlan(id, file);
 	}

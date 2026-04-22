@@ -24,8 +24,15 @@ export class RoomsService {
 			data: createRoomDto,
 		});
 
-		// Add parent floor relationship
-		await this.addParentFloor(newRoom.id, newRoom.floorId);
+		try {
+			await this.addParentFloor(newRoom.id, newRoom.floorId);
+		} catch (error) {
+			await this.prisma.client.room.delete({
+				where: { id: newRoom.id },
+			});
+
+			throw error;
+		}
 
 		return newRoom;
 	}
@@ -60,7 +67,6 @@ export class RoomsService {
 			where: { id },
 		});
 
-		// Remove parent floor relationship
 		await this.removeParentFloor(removedRoom.id, removedRoom.floorId);
 
 		return removedRoom;

@@ -15,9 +15,9 @@ export enum KetoNamespace {
 	Student = "Student",
 	Floor = "Floor",
 	DailySchedule = "DailySchedule",
+	Lesson = "Lesson",
 
 	Room = "Room",
-	Lesson = "Lesson",
 }
 
 // Used when creating and deleting relationships
@@ -36,9 +36,9 @@ type KetoNamespaceRelations = {
 	[KetoNamespace.Student]: "parentUser";
 	[KetoNamespace.Floor]: "parentBuilding";
 	[KetoNamespace.DailySchedule]: "parentClass";
+	[KetoNamespace.Lesson]: "parentClass";
 
 	[KetoNamespace.Room]: "parentFloor";
-	[KetoNamespace.Lesson]: "parentDailySchedule";
 };
 
 // Used when checking permissions
@@ -57,9 +57,9 @@ type KetoNamespacePermissions = {
 	[KetoNamespace.Student]: "manage" | "view";
 	[KetoNamespace.Floor]: "manage" | "view";
 	[KetoNamespace.DailySchedule]: "manage" | "view";
+	[KetoNamespace.Lesson]: "manage" | "view";
 
 	[KetoNamespace.Room]: "manage" | "view";
-	[KetoNamespace.Lesson]: "manage" | "view";
 };
 
 // When doing checks we might want to check for either a relation or a permission
@@ -122,14 +122,14 @@ export const KetoHierarchy: {
 		parentNamespace: KetoNamespace.Class,
 		parentRelation: "parentClass",
 	},
+	[KetoNamespace.Lesson]: {
+		parentNamespace: KetoNamespace.Class,
+		parentRelation: "parentClass",
+	},
 
 	[KetoNamespace.Room]: {
 		parentNamespace: KetoNamespace.Floor,
 		parentRelation: "parentFloor",
-	},
-	[KetoNamespace.Lesson]: {
-		parentNamespace: KetoNamespace.DailySchedule,
-		parentRelation: "parentDailySchedule",
 	},
 } as const;
 

@@ -27,7 +27,15 @@ export class StudentsService {
 			data: createStudentDto,
 		});
 
-		await this.addParentUser(student.id, createStudentDto.userId);
+		try {
+			await this.addParentUser(student.id, createStudentDto.userId);
+		} catch (error) {
+			await this.prisma.client.student.delete({
+				where: { id: student.id },
+			});
+
+			throw error;
+		}
 
 		return student;
 	}
@@ -62,13 +70,13 @@ export class StudentsService {
 	}
 
 	async remove(id: string) {
-		const student = await this.prisma.client.student.delete({
+		const removedStudent = await this.prisma.client.student.delete({
 			where: { id },
 		});
 
-		await this.removeParentUser(student.id, student.userId);
+		await this.removeParentUser(removedStudent.id, removedStudent.userId);
 
-		return student;
+		return removedStudent;
 	}
 
 	private async addParentUser(studentId: string, userId: string) {

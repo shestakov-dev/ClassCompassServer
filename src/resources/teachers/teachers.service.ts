@@ -46,7 +46,15 @@ export class TeachersService {
 			},
 		});
 
-		await this.addParentUser(teacher.id, createTeacherDto.userId);
+		try {
+			await this.addParentUser(teacher.id, createTeacherDto.userId);
+		} catch (error) {
+			await this.prisma.client.teacher.delete({
+				where: { id: teacher.id },
+			});
+
+			throw error;
+		}
 
 		return teacher;
 	}
@@ -105,7 +113,7 @@ export class TeachersService {
 	}
 
 	async remove(id: string) {
-		const teacher = await this.prisma.client.teacher.delete({
+		const removedTeacher = await this.prisma.client.teacher.delete({
 			where: { id },
 			include: {
 				subjects: true,
@@ -113,9 +121,9 @@ export class TeachersService {
 			},
 		});
 
-		await this.removeParentUser(teacher.id, teacher.userId);
+		await this.removeParentUser(removedTeacher.id, removedTeacher.userId);
 
-		return teacher;
+		return removedTeacher;
 	}
 
 	async ensureExists(id: string) {

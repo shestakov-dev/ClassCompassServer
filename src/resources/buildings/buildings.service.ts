@@ -31,8 +31,18 @@ export class BuildingsService {
 			},
 		});
 
-		// Add parent school relationship
-		await this.addParentSchool(newBuilding.id, createBuildingDto.schoolId);
+		try {
+			await this.addParentSchool(
+				newBuilding.id,
+				createBuildingDto.schoolId
+			);
+		} catch (error) {
+			await this.prisma.client.building.delete({
+				where: { id: newBuilding.id },
+			});
+
+			throw error;
+		}
 
 		return newBuilding;
 	}
@@ -95,7 +105,6 @@ export class BuildingsService {
 			},
 		});
 
-		// Remove parent school relationship
 		await this.removeParentSchool(
 			removedBuilding.id,
 			removedBuilding.schoolId
