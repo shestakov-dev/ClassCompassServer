@@ -1,6 +1,7 @@
 import {
 	Injectable,
 	InternalServerErrorException,
+	Logger,
 	OnModuleInit,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -8,6 +9,7 @@ import * as Minio from "minio";
 
 @Injectable()
 export class MinioService implements OnModuleInit {
+	private readonly logger = new Logger(MinioService.name);
 	private readonly presignedUrlExpirySeconds: number = 60 * 60;
 	private readonly bucket: string;
 	private readonly client: Minio.Client;
@@ -62,7 +64,7 @@ export class MinioService implements OnModuleInit {
 
 			return result.etag;
 		} catch (err) {
-			console.error("Failed to upload object to Minio", err);
+			this.logger.error("Failed to upload object to Minio", err);
 
 			throw new InternalServerErrorException("Failed to upload file");
 		}
@@ -76,7 +78,7 @@ export class MinioService implements OnModuleInit {
 				this.presignedUrlExpirySeconds
 			);
 		} catch (err) {
-			console.error("Failed to generate presigned URL", err);
+			this.logger.error("Failed to generate presigned URL", err);
 
 			throw new InternalServerErrorException(
 				"Failed to generate file URL"
@@ -88,7 +90,7 @@ export class MinioService implements OnModuleInit {
 		try {
 			await this.client.removeObject(this.bucket, key);
 		} catch (err) {
-			console.error("Failed to remove object", err);
+			this.logger.error("Failed to remove object", err);
 
 			throw new InternalServerErrorException("Failed to delete file");
 		}

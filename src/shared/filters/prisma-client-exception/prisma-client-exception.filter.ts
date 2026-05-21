@@ -5,6 +5,7 @@ import {
 	ConflictException,
 	ExceptionFilter,
 	InternalServerErrorException,
+	Logger,
 	NotFoundException,
 } from "@nestjs/common";
 import {
@@ -16,6 +17,8 @@ import { Response } from "express";
 // TODO: Make sure this filter works everywhere in the application as expected.
 @Catch(PrismaClientKnownRequestError, PrismaClientUnknownRequestError)
 export class PrismaClientExceptionFilter implements ExceptionFilter {
+	private readonly logger = new Logger(PrismaClientExceptionFilter.name);
+
 	catch(
 		exception:
 			| PrismaClientKnownRequestError
@@ -58,7 +61,7 @@ export class PrismaClientExceptionFilter implements ExceptionFilter {
 			}
 
 			// For other unknown errors
-			console.error("Unknown Prisma error:", exception);
+			this.logger.error("Unknown Prisma error:", exception);
 
 			const responseException = new InternalServerErrorException(
 				"An unexpected database error occurred."
@@ -129,7 +132,7 @@ export class PrismaClientExceptionFilter implements ExceptionFilter {
 			}
 
 			default: {
-				console.error(exception);
+				this.logger.error(exception);
 
 				const responseException = new InternalServerErrorException(
 					"An unexpected error occurred."

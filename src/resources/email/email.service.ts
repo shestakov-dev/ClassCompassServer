@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ISendMailOptions, MailerService } from "@nestjs-modules/mailer";
 
 interface SendEmailParams {
@@ -11,6 +11,8 @@ interface SendEmailParams {
 
 @Injectable()
 export class EmailService {
+	private readonly logger = new Logger(EmailService.name);
+
 	constructor(private readonly mailerService: MailerService) {}
 
 	async sendEmail(params: SendEmailParams): Promise<void> {
@@ -23,7 +25,7 @@ export class EmailService {
 				attachments: params.attachments,
 			});
 		} catch (error) {
-			console.error(
+			this.logger.error(
 				`Error while sending mail with the following parameters : ${JSON.stringify(
 					params
 				)}`,

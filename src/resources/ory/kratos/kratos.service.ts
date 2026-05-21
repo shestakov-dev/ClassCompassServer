@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
 	Configuration,
@@ -12,6 +12,7 @@ import { retry } from "@shared/utils/retry.util";
 
 @Injectable()
 export class KratosService {
+	private readonly logger = new Logger(KratosService.name);
 	private readonly identityApi: IdentityApi;
 	private readonly frontendApi: FrontendApi;
 
@@ -139,12 +140,12 @@ export class KratosService {
 			return response.data.recovery_link;
 		} catch (error: unknown) {
 			if (error instanceof AxiosError) {
-				console.error(
+				this.logger.error(
 					"Error creating recovery link:",
 					JSON.stringify(error.response?.data, null, 2)
 				);
 			} else {
-				console.error("An unexpected error occurred:", error);
+				this.logger.error("An unexpected error occurred:", error);
 			}
 
 			throw error;

@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import {
+	Injectable,
+	InternalServerErrorException,
+	Logger,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
 	Configuration,
@@ -20,6 +24,7 @@ import {
 
 @Injectable()
 export class KetoService {
+	private readonly logger = new Logger(KetoService.name);
 	private readonly writeRelationApi: RelationshipApi;
 	private readonly readRelationApi: RelationshipApi;
 	private readonly permissionApi: PermissionApi;
@@ -215,12 +220,12 @@ export class KetoService {
 
 	private handleKetoError(error: unknown, action: string) {
 		if (error instanceof AxiosError && error.response) {
-			console.error(
+			this.logger.error(
 				`Failed to ${action} Keto tuple:`,
 				error.response.data ?? error.message
 			);
 		} else if (error instanceof Error) {
-			console.error(
+			this.logger.error(
 				`Failed to ${action} Keto tuple (Unexpected):`,
 				error.message
 			);

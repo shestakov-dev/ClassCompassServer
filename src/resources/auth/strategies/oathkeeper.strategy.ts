@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { passportJwtSecret } from "jwks-rsa";
@@ -14,6 +14,8 @@ export class OathkeeperStrategy extends PassportStrategy(
 	Strategy,
 	"oathkeeper"
 ) {
+	private readonly logger = new Logger(OathkeeperStrategy.name);
+
 	constructor(
 		configService: ConfigService,
 		private readonly kratosService: KratosService
@@ -65,7 +67,7 @@ export class OathkeeperStrategy extends PassportStrategy(
 			try {
 				await this.kratosService.extendSession(session.id);
 			} catch (error) {
-				console.error(error);
+				this.logger.error(error);
 			}
 		}
 

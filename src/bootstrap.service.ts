@@ -1,5 +1,6 @@
 import {
 	Injectable,
+	Logger,
 	NotFoundException,
 	OnApplicationBootstrap,
 } from "@nestjs/common";
@@ -12,6 +13,8 @@ import { KratosService } from "@resources/ory/kratos/kratos.service";
 
 @Injectable()
 export class BootstrapService implements OnApplicationBootstrap {
+	private readonly logger = new Logger(BootstrapService.name);
+
 	constructor(
 		private readonly configService: ConfigService,
 		private readonly kratosService: KratosService,
@@ -76,7 +79,7 @@ export class BootstrapService implements OnApplicationBootstrap {
 			newIdentity.id
 		);
 
-		console.log(
+		this.logger.log(
 			`Platform admin ${adminEmail} created. An invite has been sent to set up credentials.`
 		);
 	}

@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	ConflictException,
 	Injectable,
+	Logger,
 } from "@nestjs/common";
 import { Day, LessonWeek, Prisma } from "@prisma/client";
 
@@ -27,6 +28,8 @@ import { getTimeFilter } from "./utils/time-filter";
 
 @Injectable()
 export class LessonsService {
+	private readonly logger = new Logger(LessonsService.name);
+
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly roomsService: RoomsService,
@@ -332,7 +335,10 @@ export class LessonsService {
 						},
 					});
 				} catch (rollbackError) {
-					console.error("Failed to rollback lesson:", rollbackError);
+					this.logger.error(
+						"Failed to rollback lesson:",
+						rollbackError
+					);
 
 					throw rollbackError;
 				}
@@ -343,7 +349,7 @@ export class LessonsService {
 							resolvedDailyScheduleId
 						);
 					} catch (cleanupError) {
-						console.error(
+						this.logger.error(
 							"Failed to cleanup daily schedule after lesson rollback:",
 							cleanupError
 						);

@@ -4,6 +4,7 @@ import {
 	ForbiddenException,
 	Injectable,
 	InternalServerErrorException,
+	Logger,
 	UnauthorizedException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
@@ -18,6 +19,8 @@ import { KetoService } from "../keto/keto.service";
 
 @Injectable()
 export class KetoPermissionGuard implements CanActivate {
+	private readonly logger = new Logger(KetoPermissionGuard.name);
+
 	constructor(
 		private readonly reflector: Reflector,
 		private readonly ketoService: KetoService
@@ -40,7 +43,7 @@ export class KetoPermissionGuard implements CanActivate {
 
 		// This should never happen, as we should have an authentication guard before this
 		if (!user || !user.identityId) {
-			console.error(
+			this.logger.error(
 				"KetoPermissionGuard: No user found in request context"
 			);
 
@@ -51,7 +54,7 @@ export class KetoPermissionGuard implements CanActivate {
 
 		// This should never happen, as we should have validated the request before this
 		if (!objectId || typeof objectId !== "string") {
-			console.error(
+			this.logger.error(
 				`KetoPermissionGuard: Unable to extract object ID using options ${JSON.stringify(
 					options
 				)}`

@@ -3,6 +3,7 @@ import {
 	forwardRef,
 	Inject,
 	Injectable,
+	Logger,
 } from "@nestjs/common";
 
 import { KetoNamespace } from "@resources/ory/keto/definitions";
@@ -25,6 +26,8 @@ type UserCreateRollbackState = {
 
 @Injectable()
 export class UsersService {
+	private readonly logger = new Logger(UsersService.name);
+
 	constructor(
 		private readonly prisma: PrismaService,
 		@Inject(forwardRef(() => SchoolsService))
@@ -293,7 +296,7 @@ export class UsersService {
 					state.identityId
 				);
 			} catch (cleanupError) {
-				console.error(
+				this.logger.error(
 					"Failed to remove user member relationship:",
 					cleanupError
 				);
@@ -304,7 +307,7 @@ export class UsersService {
 			try {
 				await this.removeParentSchool(state.userId, state.schoolId);
 			} catch (cleanupError) {
-				console.error(
+				this.logger.error(
 					"Failed to remove user parent school relationship:",
 					cleanupError
 				);
@@ -316,13 +319,16 @@ export class UsersService {
 				where: { id: state.userId },
 			});
 		} catch (cleanupError) {
-			console.error("Failed to remove user from Prisma:", cleanupError);
+			this.logger.error(
+				"Failed to remove user from Prisma:",
+				cleanupError
+			);
 		}
 
 		try {
 			await this.kratosService.deleteIdentity(state.identityId);
 		} catch (cleanupError) {
-			console.error(
+			this.logger.error(
 				"Failed to remove Kratos identity after user rollback:",
 				cleanupError
 			);
