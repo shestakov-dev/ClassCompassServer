@@ -1,6 +1,15 @@
 # ClassCompass Server
 
-NestJS backend for the ClassCompass platform.
+NestJS modular monolith backend for the ClassCompass platform.
+
+## Core Responsibilities
+
+The backend repository handles the core application business logic, persistence interactions, and data validation rules.
+
+- **Domain Logic**: Processes data and executes validation to catch scheduling conflicts.
+- **Multitenancy**: Enforces data isolation between different educational institutions sharing the same database infrastructure.
+- **Access Control**: Integrates with the Ory ecosystem to provide a secure access control mechanism.
+- **API Specification**: Exposes a structured OpenAPI endpoint layout used to synchronize data contracts with the frontend.
 
 ## Local start
 
