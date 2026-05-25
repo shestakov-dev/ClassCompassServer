@@ -30,7 +30,9 @@ jobs:
               run: pnpm install
 
             - name: Run Prettier Formatter
-              run: pnpm exec prettier --check .
+              run: |
+                  pnpm exec prettier --write .
+                  git diff --exit-code
 
             - name: Run ESLint
-              run: pnpm run lint
+              run: pnpm exec eslint "{src,apps,libs,test}/**/*.ts"
